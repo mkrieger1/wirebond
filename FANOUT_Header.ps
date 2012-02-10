@@ -1,0 +1,32 @@
+%%Pages: 0
+%%Creator: Peter Fischer
+%%EndComments
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Fanout     (c) PeFi 2012  %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/COL_PAD    {0.5 0.5   0 setrgbcolor} def
+/COL_BOND   {0   dup dup setrgbcolor} def
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Procedures                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/PAD_W  50 def
+/PAD_L 200 def
+
+/Pad_Small {      %% on stack: rot x y
+  gsave translate rotate
+  PAD_L -2 div PAD_W -2 div PAD_L PAD_W rectfill
+  grestore
+} def
+
+/Pad_Large {      %% on stack: rot x y
+  gsave translate rotate
+  PAD_L -2 div PAD_W -2 div PAD_L PAD_W rectfill
+  grestore
+} def
+
+10 setlinewidth
+
