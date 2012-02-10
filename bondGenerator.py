@@ -8,24 +8,17 @@
 #            aimed for compatibility with input files
 #------------------------------------------------------------------------------
 
+#!/usr/bin/python
+
 import math
 
 class Point2D():
-    self.x = 0.0
-    self.y = 0.0
-
-    def __init__(self, x, y):
+    def __init__(self, x=0, y=0):
         self.x = float(x)
         self.y = float(y)
 
 class Bond():
-    self.p1  = Point2d(0, 0)
-    self.p2  = Point2d(0, 0)
-    self.phi = 0.0
-    self.l   = 0.0
-    self.row = 0.0
-    
-    def __init__(self, p1, p2, phi, l, row):
+    def __init__(self, p1, p2, phi=0, l=0, row=0):
         self.p1 = p1
         self.p2 = p2
         self.phi = float(phi)
@@ -33,8 +26,8 @@ class Bond():
         self.row = int(row)
 
     def calc_p2_from_lphi(self):
-        self.p2.x = self.p1.x + l * math.cos(self.phi)
-        self.p2.y = self.p1.y + l * math.sin(self.phi)
+        self.p2.x = self.p1.x + self.l * math.cos(self.phi)
+        self.p2.y = self.p1.y + self.l * math.sin(self.phi)
 
     def rotate_angle(self, dphi):
         self.phi += dphi
@@ -42,28 +35,6 @@ class Bond():
 
     def rotate_dist(self, d):
         self.rotate_angle(d/self.l)
-
-#struct T_Bond {
-#  T_Point2D    p1, p2;
-#  float        phi;            // angle (rad, 0 = vertical)
-#  float        l;              // length
-#  unsigned int row;
-#
-#  void Calc_p2_from_lphi(void) {
-#    p2.x = p1.x + l * std::cos(phi);
-#    p2.y = p1.y + l * std::sin(phi);
-#  };
-#
-#  void Rotate_angle(float deltaPhi) {
-#    phi += deltaPhi;
-#    Calc_p2_from_lphi();
-#  };
-#
-#  void Rotate_dist(float d) {
-#    Rotate_angle(d / l);
-#  };
-#
-#};
 
 # Schritt 1
 def read_chip_pad_definitions(filename):
@@ -85,12 +56,24 @@ def read_chip_pad_definitions(filename):
 
     # read chip pads
     pads = ' '.join(f.readlines()[:-1]).split() # last line contains '-1' as EOF marker
-    f.close()
+    bonds = []
+    xpos = 0
+    phi = PHI_L
+    step_phi = (PHI_R - PHI_L) / (len(pads)-1)
 
-    print Nrow, Ring
-    print PHI_L, PHI_R
-    print pitch
-    print pads
+    for pad in pads:
+        p1 = Point2D(xpos, 0)
+        p2 = Point2D(0, 0)
+        row = int(pad)-1
+        l = Ring[row]
+        b = Bond(p1, p2, phi, l, row)
+        b.calc_p2_from_lphi()
+        bonds.append(b)
+
+        phi += step_phi
+        xpos += pitch
+
+    f.close()
 
 if __name__=='__main__':
     read_chip_pad_definitions('input/Pattern_Top.txt')
