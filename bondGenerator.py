@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 #------------------------------------------------------------------------------
 # This is a clone/port of Peter Fischer's bond generator program
 # from C++ to Python
@@ -8,9 +11,11 @@
 #            aimed for compatibility with input files
 #------------------------------------------------------------------------------
 
-#!/usr/bin/python
-
 import math
+
+#------------------------------------------------------------------------------
+# Classes
+#------------------------------------------------------------------------------
 
 class Point2D():
     def __init__(self, x=0, y=0):
@@ -18,7 +23,8 @@ class Point2D():
         self.y = float(y)
 
 class Bond():
-    def __init__(self, p1, p2, phi=0, l=0, row=0):
+    def __init__(self, name, p1, p2, phi=0, l=0, row=0):
+        self.name = name
         self.p1 = p1
         self.p2 = p2
         self.phi = float(phi)
@@ -36,7 +42,15 @@ class Bond():
     def rotate_dist(self, d):
         self.rotate_angle(d/self.l)
 
-# Schritt 1
+    def __str__(self):
+        return ("Bond \"%s\" on row %i, (%7.1f, %7.1f) --> (%7.1f, %7.1f), "
+                "phi = %5.1f°, l = %6.1f µm") % (self.name, self.row,
+                self.p1.x, self.p1.y, self.p2.x, self.p2.y,
+                self.phi*180/math.pi, self.l)
+
+#------------------------------------------------------------------------------
+# Step 1 - Read chip pad geometry from file and create a "Bond" for each pad
+#------------------------------------------------------------------------------
 def read_chip_pad_definitions(filename):
     f = open(filename)
     
@@ -61,12 +75,13 @@ def read_chip_pad_definitions(filename):
     phi = PHI_L
     step_phi = (PHI_R - PHI_L) / (len(pads)-1)
 
-    for pad in pads:
+    # create bonds
+    for (padnumber, pad) in enumerate(pads):
         p1 = Point2D(xpos, 0)
         p2 = Point2D(0, 0)
         row = int(pad)-1
         l = Ring[row]
-        b = Bond(p1, p2, phi, l, row)
+        b = Bond(str(padnumber), p1, p2, phi, l, row)
         b.calc_p2_from_lphi()
         bonds.append(b)
 
@@ -75,8 +90,15 @@ def read_chip_pad_definitions(filename):
 
     f.close()
 
+    return bonds
+
+
+#------------------------------------------------------------------------------
+# Main
+#------------------------------------------------------------------------------
 if __name__=='__main__':
-    read_chip_pad_definitions('input/Pattern_Top.txt')
+    bonds = read_chip_pad_definitions('input/Pattern_Top.txt')
+    for bond in bonds [:10]: print bond
 
 #void __fastcall TForm1::ButtonLoadClick(TObject *Sender)
 #{
