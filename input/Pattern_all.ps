@@ -1,5 +1,5 @@
 %!PS-Adobe-3.0 EPSF-3.0
-%%BoundingBox: 0 0 11000 11000
+%%BoundingBox: 0 0 595 842
 %%Pages: 0
 %%Creator: Peter Fischer
 %%EndComments
@@ -621,6 +621,8 @@ COL_BOND
 stroke
 grestore
 } def
+/DrawAll {
+gsave
 1600 7800 translate
 DrawTop
 1383 -5636 translate 90 rotate
@@ -629,4 +631,11 @@ DrawLeft
 DrawBottom
 1383 -6281 translate 90 rotate
 DrawRight
+grestore
+} def
+
+0 200 translate
+0.055 dup scale
+DrawAll
 showpage
+
