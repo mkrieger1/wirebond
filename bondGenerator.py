@@ -22,6 +22,9 @@ class Point2D():
         self.x = float(x)
         self.y = float(y)
 
+    def __str__(self):
+        return "(%7.1f, %7.1f)" % (self.x, self.y)
+
 class Bond():
     def __init__(self, name, p1, p2, phi=0, l=0, row=0):
         self.name = name
@@ -35,6 +38,12 @@ class Bond():
         self.p2.x = self.p1.x + self.l * math.cos(self.phi)
         self.p2.y = self.p1.y + self.l * math.sin(self.phi)
 
+    def calc_lphi_from_p2(self):
+        dx = self.p2.x-self.p1.x
+        dy = self.p2.y-self.p1.y
+        self.phi = math.atan2(dy, dx)
+        self.l = math.sqrt(dx**2 + dy**2)
+
     def rotate_angle(self, dphi):
         self.phi += dphi
         self.calc_p2_from_lphi()
@@ -43,10 +52,32 @@ class Bond():
         self.rotate_angle(d/self.l)
 
     def __str__(self):
-        return ("Bond \"%s\" on row %i, (%7.1f, %7.1f) --> (%7.1f, %7.1f), "
+        return ("Bond \"%s\" on row %i, %s --> %s, "
                 "phi = %5.1f°, l = %6.1f µm") % (self.name, self.row,
-                self.p1.x, self.p1.y, self.p2.x, self.p2.y,
-                self.phi*180/math.pi, self.l)
+                str(self.p1), str(self.p2), self.phi*180/math.pi, self.l)
+
+#------------------------------------------------------------------------------
+# Functions
+#------------------------------------------------------------------------------
+def distance(bond, point2d):
+    b = bond
+    a = point2d
+    dirx = math.cos(b.phi)
+    diry = math.sin(b.phi)
+    lambd = (b.p2.x - a.x) * dirx + (b.p2.y - a.y) * diry
+    dx = a.x - b.p2.x + lambd * dirx
+    dy = a.y - b.p2.y + lambd * diry
+    return math.sqrt(dx**2+dy**2) if (lambd > 0) else 0
+
+def distance2(bond, point2d):
+    b = bond
+    a = point2d
+    dirx = math.cos(b.phi)
+    diry = math.sin(b.phi)
+    dx = (b.p2.x - a.x)
+    dy = (b.p2.y - a.y)
+    return abs(dx*diry - dy*dirx)
+
 
 #------------------------------------------------------------------------------
 # Step 1 - Read chip pad geometry from file and create a "Bond" for each pad
