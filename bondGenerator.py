@@ -158,7 +158,8 @@ def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
                 d_av += dist
                 d_min = dist if (d_min == -1) else min(d_min, dist)
                 npair += 1
-        d_av /= npair
+        if npair > 0:
+            d_av /= npair
 
         for i in range(1, N-1):
             inext = i+1
