@@ -166,7 +166,7 @@ def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
             prev_is_same_row = (bonds[iprev].row == bonds[i].row)
             next_is_same_row = (bonds[inext].row == bonds[i].row)
             d12 = pointDistance(bonds[iprev], bonds[i])
-            d23 = pointDistance(bonds[i], bonds[iprev])
+            d23 = pointDistance(bonds[i], bonds[inext])
             d13 = d12 + d23
 
             if (prev_is_same_row and next_is_same_row):
@@ -263,7 +263,7 @@ if __name__=='__main__':
       read_chip_pad_definitions('input/Pattern_Top.txt')
     (bonds, d_av, d_min) = \
       iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
-    #bonds = clean_up(bonds, rings, d_av)
+    bonds = clean_up(bonds, rings, d_av)
 
     from bondOutputPostscript import *
     with open('bondspstest.ps', 'w') as f:
