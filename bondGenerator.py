@@ -106,21 +106,24 @@ def read_chip_pad_definitions(filename):
     pads = ' '.join(f.readlines()[:-1]).split() # last line contains '-1' as EOF marker
     bonds = []
     xpos = 0
-    phi = PHI_L
-    step_phi = (PHI_R - PHI_L) / (len(pads)-1)
 
     # create bonds
     for (padnumber, pad) in enumerate(pads):
-        p1 = Point2D(xpos, 0)
-        p2 = Point2D(0, 0)
         row = int(pad)-1
-        l = rings[row]
-        b = Bond(str(padnumber), p1, p2, phi, l, row)
-        b.calc_p2_from_lphi()
-        bonds.append(b)
-
-        phi += step_phi
+        if row >= 0: # row == -1 is an empty pad
+            p1 = Point2D(xpos, 0)
+            p2 = Point2D(0, 0)
+            l = rings[row]
+            bonds.append(Bond(str(padnumber), p1, p2, 0, l, row))
         xpos += pitch
+
+    # distribute evenly between min. and max. angle
+    step_phi = (PHI_R - PHI_L) / (len(bonds)-1)
+    phi = PHI_L
+    for b in bonds:
+        b.phi = phi
+        b.calc_p2_from_lphi()
+        phi += step_phi
 
     f.close()
 
@@ -149,7 +152,8 @@ def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
         npair = 0
 
         for i in range(1, N):
-            if (bonds[i-1].row == bonds[i].row):
+            iprev = i-1
+            if (bonds[iprev].row == bonds[i].row):
                 dist = pointDistance(bonds[i-1], bonds[i])
                 d_av += dist
                 d_min = dist if (d_min == -1) else min(d_min, dist)
@@ -255,9 +259,11 @@ def clean_up(bonds, rings, d_av):
 # Main
 #------------------------------------------------------------------------------
 if __name__=='__main__':
-    (rings, angles, pitch, bonds) = read_chip_pad_definitions('input/Pattern_Top.txt')
-    (bonds, d_av, d_min) = iterate_bonds(rings, angles, pitch, bonds, 1, shiftInterposer=False)
-    bonds = clean_up(bonds, rings, d_av)
+    (rings, angles, pitch, bonds) = \
+      read_chip_pad_definitions('input/Pattern_Top.txt')
+    (bonds, d_av, d_min) = \
+      iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
+    #bonds = clean_up(bonds, rings, d_av)
 
     from bondOutputPostscript import *
     with open('bondspstest.ps', 'w') as f:
