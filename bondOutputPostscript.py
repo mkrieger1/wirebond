@@ -1,3 +1,5 @@
+import math
+
 #------------------------------------------------------------------------------
 # Beginning of Postscript file: header & subroutine definitions
 #------------------------------------------------------------------------------
@@ -52,8 +54,9 @@ def postscript_header():
 # Draw a bond
 #------------------------------------------------------------------------------
 def postscript_bond(bond):
-    return "%.1f %.1f %.1f %.1f %.1f Bond" % (bond.phi, bond.p1.x, bond.p1.y,
-                                                        bond.p2.x, bond.p2.y)
+    return "%.1f %.1f %.1f %.1f %.1f Bond" % (bond.p1.x, bond.p1.y,
+                                              bond.p2.x, bond.p2.y,
+                                              bond.phi/math.pi*180)
 
 
 #------------------------------------------------------------------------------
@@ -65,12 +68,12 @@ def mm2pt(x):
 def postscript_footer(scale=10):
     return """} def
 
-%.6f dup scale
 298 300 translate
+%.6f dup scale
 DrawBonds
 
 showpage 
-""" % mm2pt(1.0*scale) # e.g. scale=10 --> 100 um real = 1 mm on paper
+""" % mm2pt(1.0/scale) # scale=x --> x units = 1 mm on paper
 
 
 #------------------------------------------------------------------------------
@@ -80,5 +83,5 @@ def bonds_output_postscript(bonds, f=None):
     print >> f, postscript_header()
     for bond in bonds:
         print >> f, postscript_bond(bond)
-    print >> f, postscript_footer(scale=10)
+    print >> f, postscript_footer(scale=100)
 

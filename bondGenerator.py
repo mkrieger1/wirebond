@@ -179,7 +179,7 @@ def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
                 shift3 = -(d13 - d13_target - shift1)
                 shift2 = shift1 + d12_target - d12
 
-                if (inext == N_1):
+                if (inext == N-1):
                     shift1 -= shift3
                     shift2 -= shift3
                     shift3 -= shift3 # 0
@@ -255,6 +255,11 @@ def clean_up(bonds, rings, d_av):
 # Main
 #------------------------------------------------------------------------------
 if __name__=='__main__':
-    bonds = read_chip_pad_definitions('input/Pattern_Top.txt')
-    for bond in bonds [:10]: print bond
+    (rings, angles, pitch, bonds) = read_chip_pad_definitions('input/Pattern_Top.txt')
+    (bonds, d_av, d_min) = iterate_bonds(rings, angles, pitch, bonds, 1, shiftInterposer=False)
+    bonds = clean_up(bonds, rings, d_av)
+
+    from bondOutputPostscript import *
+    with open('bondspstest.ps', 'w') as f:
+        bonds_output_postscript(bonds, f)
 
