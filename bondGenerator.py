@@ -188,13 +188,16 @@ def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
                 bonds[i    ].rotate_dist(-shift2)
                 bonds[inext].rotate_dist(-shift3)
 
-    return bonds
+    print "PCB Bond average: ", d_av
+    print "PCB Bond min    : ", d_min
+
+    return (bonds, d_av, d_min)
 
 
 #------------------------------------------------------------------------------
 # Step 3 - Clean Up (better do it right in the first place)
 #------------------------------------------------------------------------------
-def clean_up(bonds, rings):
+def clean_up(bonds, rings, d_av):
     N = len(bonds)
     OUTERROW = len(rings)-1
     i_last = -1
@@ -228,6 +231,8 @@ def clean_up(bonds, rings):
             bonds[i].rotate_angle(angle * i / (iproblem-1))
         for i in range(iproblem, N):
             bonds[i].rotate_angle(-angle * (N-1-i) / (N-1-iproblem))
+
+    return bonds
 
         
 
