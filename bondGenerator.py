@@ -128,7 +128,7 @@ def read_chip_pad_definitions(filename):
 
 
 #------------------------------------------------------------------------------
-# Step 2 - ?
+# Step 2 - Iteratively shift bonds around
 #------------------------------------------------------------------------------
 def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
     DMIN = pitch
@@ -187,106 +187,49 @@ def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
                 bonds[iprev].rotate_dist(-shift1)
                 bonds[i    ].rotate_dist(-shift2)
                 bonds[inext].rotate_dist(-shift3)
-        
 
-#//benoetigt! (Schritt 2)
-#void __fastcall TForm1::ButtonIterateClick(TObject *Sender)
-#{
-#  Memo1->Clear();
-#  const bool ShiftInterposer = CB_ShiftInterposer->Checked;
-#  float d_min;
-#
-#  for (int it = 0; it < NITER->Text.ToInt(); it++) {
-#
-#    // Use pairs of distances and shift the middle point
-#
-#    if (ShiftInterposer) {
-#      for (unsigned int i = 1; i < N-1; i++) {        // shift point i
-#/*
-#        float d12 = PointDistance(BB[i-1], BB[i  ]);  // shift on interposer
-#        float d23 = PointDistance(BB[i  ], BB[i+1]);
-#        float dav = (d12 + d23) / 2.0;
-#        float dx = PI[i].x - PI[i-1].x;
-#        PI[i].x = PI[i-1].x + dx * dav / d12;
-#*/
-#      }
-#    }
-#
-#    // Calculate the average distance of adjacent bonds on board
-#    d_av      =  0;
-#    d_min     = -1;
-#    int npair = 0;
-#    for (unsigned int i = 1; i < N; i++) {
-#      unsigned int iprev = i-1;
-#      if (BB[iprev].row == BB[i].row) {
-#        float dist = PointDistance(BB[iprev], BB[i    ]);
-#        d_av += dist;
-#        d_min = (d_min == -1) ? dist : std::min(d_min, dist);
-#        npair++;
-#      }
-#    }
-#    d_av /= npair;
-#//    Memo1->Lines->Add("d_av: " + (AnsiString)d_av);
-#
-#    const float DMIN = pitch;
-#
-#    for (unsigned int i = 1; i < N-1; i++) {         // shift point i on board
-#      unsigned int inext = i+1;
-#      unsigned int iprev = i-1;
-#      bool  prev_is_same_row = BB[iprev].row == BB[i].row;
-#      bool  next_is_same_row = BB[i].row == BB[inext].row;
-#      float d12 = PointDistance(BB[iprev], BB[i    ]);
-#      float d23 = PointDistance(BB[i    ], BB[inext]);
-#      float d13 = d12 + d23;
-#
-#      if (prev_is_same_row && next_is_same_row) {      // L+R same row
-#        float dav = d13 / 2.0;                         // adjust middle point
-#        float shift = d12 - dav;                       // linear shift
-#        BB[i].Rotate_dist(shift);
-#      } else {
-#//        1        2                  3
-#//        X        X                  X
-#//               X   X        X              <-> d13_target
-#//        |shift1|
-#//        |           d13             |
-#//               | d13_target |
-#//                            |shift3 |
-#
-#        float d12_target = prev_is_same_row ? d_av : DMIN;
-#        float d23_target = next_is_same_row ? d_av : DMIN;
-#
-#        float d13_target = d12_target + d23_target;
-#        float shift1 = (iprev == 0) ? 0 : (d13 - d13_target) / 2.0;
-#        float shift3 = - (d13 - d13_target - shift1);
-#        float shift2 = shift1 + d12_target - d12;
-#
-#        if (inext == N-1) {
-#          shift1 -= shift3;
-#          shift2 -= shift3;
-#          shift3 -= shift3;
-#        }
-#
-#        BB[iprev].Rotate_dist(-shift1);
-#        BB[i    ].Rotate_dist(-shift2);
-#        BB[inext].Rotate_dist(-shift3);
-#
-#      }
-#
-#//      Memo1->Lines->Add(AnsiString(i) + ": " + (AnsiString)d12 + "/" + (AnsiString)d23);
-#    }
-#
-#  } // end for it
-#
-#  Display();
-#
-#//  Memo1->Clear();
-#
-#//  Memo1->Lines->Add("Chip:");
-#//  Memo1->Lines->Add("Average Pad Distance: " + AnsiString( (int) ((float) W / (float) (N-1))));
-#//  Memo1->Lines->Add("Bond pitch: " + AnsiString( (int) PointDistance(BB[0], BB[1])));
-#  Memo1->Lines->Add("PCB Bond average: " + AnsiString( (int) d_av ));
-#  Memo1->Lines->Add("PCB Bond min    : " + AnsiString( (int) d_min ));
-#}
+    return bonds
+
+
+#------------------------------------------------------------------------------
+# Step 3 - Clean Up (better do it right in the first place)
+#------------------------------------------------------------------------------
+def clean_up(bonds, rings):
+    N = len(bonds)
+    OUTERROW = len(rings)-1
+    i_last = -1
+    iproblem = -1
+
+    for i in range(N-1):
+        if (i_last == -1):
+            if (bonds[i].row == OUTERROW):
+                i_last = i
+        else:
+            if (bonds[i].row == OUTERROW):
+                dx = bonds[i].p2.x - bonds[i_last].p2.x
+                dy = bonds[i].p2.y - bonds[i_last].p2.y
+                d_bad = math.sqrt(dx**2 + dy**2)
+                if (dx < 0):
+                    iproblem = i
+                    break
+                i_last = i
+
+    if (iproblem == -1):
+        print "Nothing to clean up"
+    else:
+        print "Cleaning up index ", iproblem
+        print "d_av = ", d_av
+        d_bad *= -1
+        print "Bad distance = ", d_bad
+        shift = (d_av - d_bad) / 2.0
+        angle = shift / rings[OUTERROW]
+
+        for i in range(iproblem):
+            bonds[i].rotate_angle(angle * i / (iproblem-1))
+        for i in range(iproblem, N):
+            bonds[i].rotate_angle(-angle * (N-1-i) / (N-1-iproblem))
+
+        
 
 #------------------------------------------------------------------------------
 # Main
