@@ -7,34 +7,36 @@ def postscript_header():
     return """%!PS-Adobe-3.0 EPSF-3.0
 %%BoundingBox: 0 0 595 842
 
-/COL_PAD    {0.5 0.8   0 setrgbcolor} def
-/COL_BOND   {0   dup dup setrgbcolor} def
+%------------------------------------------------------------------------------
+% customize here
+%------------------------------------------------------------------------------
+/COL_PAD    {0.5 0.8 0 setrgbcolor} def
+/COL_BOND   {0   0   0 setrgbcolor} def
 
-/PADSml_W 50 def
-/PADSml_L 90 def
+/PADSml_W  50 def
+/PADSml_L  90 def
 /PADLrg_W 150 def
 /PADLrg_L 300 def
 
-/Pad_Small {      %% on stack: rot x y
+/Pad_Small { % on stack: rot x y
   gsave translate rotate
   PADSml_L -2 div PADSml_W -2 div PADSml_L PADSml_W rectfill
   grestore
 } def
 
-/Pad_Large {      %% on stack: rot x y
+/Pad_Large { % on stack: rot x y
   gsave translate rotate
   PADLrg_L -2 div PADLrg_W -2 div PADLrg_L PADLrg_W rectfill
   grestore
 } def
 
-/Bond {           %% on stack: x1 y1 x2 y2 phi
-  5 dict begin
+/Bond { % on stack: x1 y1 x2 y2 phi
+  gsave 5 dict begin
   /phi exch def
   /y2  exch def
   /x2  exch def
   /y1  exch def
   /x1  exch def
-  gsave
 
   COL_PAD
   phi x1 y1 Pad_Small
@@ -43,37 +45,45 @@ def postscript_header():
   COL_BOND 10 setlinewidth
   x1 y1 moveto x2 y2 lineto stroke
 
-  grestore
-  end
+  end grestore
 } def
 
-/DrawBonds {"""
+%------------------------------------------------------------------------------
+% scaling helper functions
+%------------------------------------------------------------------------------
+/per_mm {
+  % x per_mm --> x units = 1 mm on paper
+  72 25.4 div exch div dup scale
+} def
+
+/mm {
+  % x mm --> 72/25.4*x pt
+  72 25.4 div mul
+} def
+
+/DrawBonds { gsave"""
+
 
 
 #------------------------------------------------------------------------------
 # Draw a bond
 #------------------------------------------------------------------------------
 def postscript_bond(bond):
-    return "%.1f %.1f %.1f %.1f %.1f Bond" % (bond.p1.x, bond.p1.y,
-                                              bond.p2.x, bond.p2.y,
-                                              bond.phi/math.pi*180)
+    return "%7.1f %7.1f %7.1f %7.1f %6.1f Bond" % (bond.p1.x, bond.p1.y,
+                                                   bond.p2.x, bond.p2.y,
+                                                   bond.phi/math.pi*180)
 
 
 #------------------------------------------------------------------------------
 # End of Postscript file
 #------------------------------------------------------------------------------
-def mm2pt(x):
-    return x/25.4*72
+def postscript_footer(per_mm=100):
+    return """grestore } def
 
-def postscript_footer(scale=10):
-    return """} def
-
-298 300 translate
-%.6f dup scale
-DrawBonds
+105 mm 120 mm translate %.1f per_mm DrawBonds
 
 showpage 
-""" % mm2pt(1.0/scale) # scale=x --> x units = 1 mm on paper
+""" % per_mm
 
 
 #------------------------------------------------------------------------------
@@ -83,5 +93,5 @@ def bonds_output_postscript(bonds, f=None):
     print >> f, postscript_header()
     for bond in bonds:
         print >> f, postscript_bond(bond)
-    print >> f, postscript_footer(scale=100)
+    print >> f, postscript_footer(per_mm=100)
 
