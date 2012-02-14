@@ -66,7 +66,7 @@ def postscript_footer(scale=10):
     return """} def
 
 %.6f dup scale
-200 300 translate
+298 300 translate
 DrawBonds
 
 showpage 
@@ -76,9 +76,9 @@ showpage
 #------------------------------------------------------------------------------
 # Main
 #------------------------------------------------------------------------------
-def bonds_output_postscript(bonds):
-    print postscript_header()
+def bonds_output_postscript(bonds, f=None):
+    print >> f, postscript_header()
     for bond in bonds:
-        print postscript_bond(bond)
-    print postscript_footer(scale=10)
+        print >> f, postscript_bond(bond)
+    print >> f, postscript_footer(scale=10)
 
