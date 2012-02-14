@@ -1,5 +1,6 @@
 RINGS 700 1150 1600 2500
 ANGLES 135 -225
+D_MIN 250
 
 # clockwise... to do: ccw
 

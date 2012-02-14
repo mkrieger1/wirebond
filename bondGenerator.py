@@ -25,6 +25,16 @@ class Point2D():
     def __str__(self): # --> "str(p)" returns "p.__str__()"
         return "(%7.1f, %7.1f)" % (self.x, self.y)
 
+    def __add__(self, p): # overload "+" operator
+        x = self.x + p.x
+        y = self.y + p.y
+        return Point2D(x, y)
+
+    def __sub__(self, p): # overload "-" operator
+        x = self.x - p.x
+        y = self.y - p.y
+        return Point2D(x, y)
+
 class Bond():
     def __init__(self, name, p1, p2, phi=0, l=0, row=0):
         self.name = name
@@ -85,49 +95,84 @@ def pointDistance(bond1, bond2):
 #------------------------------------------------------------------------------
 # Step 1 - Read chip pad geometry from file and create a "Bond" for each pad
 #------------------------------------------------------------------------------
+def get_valid_lines(filename):
+    with open(filename) as f:
+        for line_raw in f:
+            line = line_raw.lstrip().rstrip()
+            if (not line.startswith('#') and len(line)):
+                yield line
+
 def read_chip_pad_definitions(filename):
-    f = open(filename)
-    
-    # read number of rows and radii
-    ringline = map(int, f.readline().split())
-    Nrings = ringline[0] # TO DO: change in input file format
-                         # do not specify number of rings, only their radii
-    rings = ringline[1:] # --> Nrings = len(rings)
-
-    # read angles
-    angles = map(int, f.readline().split())
-    PHI_L = (angles[0]+90) * math.pi/180
-    PHI_R = (90-angles[1]) * math.pi/180
-
-    # read pitch
-    pitch = int(f.readline()) # um
-
-    # read chip pads
-    pads = ' '.join(f.readlines()[:-1]).split() # last line contains '-1' as EOF marker
+    pos = Point2D(0, 0)
+    incr = Point2D(0, 0)
     bonds = []
-    xpos = 0
+    padnumber = 0
+    read_pads = False
 
-    # create bonds
-    for (padnumber, pad) in enumerate(pads):
-        row = int(pad)-1
-        if row >= 0: # row == -1 is an empty pad
-            p1 = Point2D(xpos, 0)
-            p2 = Point2D(0, 0)
-            l = rings[row]
-            bonds.append(Bond(str(padnumber), p1, p2, 0, l, row))
-        xpos += pitch
+    # process input file
+    for line in get_valid_lines(filename):
+        # get rings
+        if line.startswith('RINGS'):
+            rings = map(int, line.split()[1:])
 
-    # distribute evenly between min. and max. angle
-    step_phi = (PHI_R - PHI_L) / (len(bonds)-1)
-    phi = PHI_L
+        # get min./max. angle
+        elif line.startswith('ANGLES'):
+            angles = [int(x)*math.pi/180 for x in line.split()[1:]]
+
+        # get minimum pad distance
+        elif line.startswith('D_MIN'):
+            d_min = int(line.split()[1])
+
+        # move position
+        elif line.startswith('MOVE'):
+            [dx, dy] = map(int, line.split()[1:])
+            pos.x += dx
+            pos.y += dy
+
+        # change position auto-increment
+        elif line.startswith('INCR'):
+            [dx, dy] = map(int, line.split()[1:])
+            incr.x = dx
+            incr.y = dy
+
+        # go into read_pad mode
+        elif line.startswith('BEGIN PADS'):
+            read_pads = True
+
+        # leave read_pad mode
+        elif line.startswith('END PADS'):
+            read_pads = False
+            pos -= incr # undo position change after last pad
+
+        # read pads if in read_pad mode and
+        # create a bond for each pad with row > -1
+        elif read_pads:
+            pads = map(int, line.split())
+            for pad in pads:
+                row = pad-1
+                if row > -1: # row == -1 is an empty pad
+                    p1 = Point2D(pos.x, pos.y)
+                    p2 = Point2D(0, 0)
+                    l = rings[row]
+                    bonds.append(Bond(str(padnumber), p1, p2, 0, l, row))
+                pos += incr
+                padnumber += 1
+
+    # distribute bonds evenly between min. and max. angle
+    step_phi = (angles[1]-angles[0]) / (len(bonds)-1)
+    phi = angles[0]
     for b in bonds:
         b.phi = phi
         b.calc_p2_from_lphi()
         phi += step_phi
 
-    f.close()
+    print "found %i rings:" % len(rings), ' '.join(map(str, rings))
+    print "left angle: %.1f, right angle: %.1f" % (angles[1]*180/math.pi,
+                                                   angles[0]*180/math.pi)
+    print "minimum pad distance: %.1f" % d_min
+    for bond in bonds: print bond
 
-    return (rings, angles, pitch, bonds)
+    return (rings, angles, d_min, bonds)
 
 
 #------------------------------------------------------------------------------
@@ -260,11 +305,11 @@ def clean_up(bonds, rings, d_av):
 # Main
 #------------------------------------------------------------------------------
 if __name__=='__main__':
-    (rings, angles, pitch, bonds) = \
-      read_chip_pad_definitions('input/Pattern_Top.txt')
-    (bonds, d_av, d_min) = \
-      iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
-    bonds = clean_up(bonds, rings, d_av)
+    (rings, angles, d_min, bonds) = \
+      read_chip_pad_definitions('input/Pattern_all.txt')
+    #(bonds, d_av, d_min) = \
+    #  iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
+    #bonds = clean_up(bonds, rings, d_av)
 
     from bondOutputPostscript import *
     with open('bondspstest.ps', 'w') as f:
