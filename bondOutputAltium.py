@@ -1,11 +1,11 @@
-#!/usr/bin/python
+import math
 
 # Delphiscript code from: "Delphiscript Scripts/Pcb/CreateFootprintInLibrary.pas"
 
 #------------------------------------------------------------------------------
-# begin of .pas file
+# Beginning of Altium .pas file
 #------------------------------------------------------------------------------
-def header(footprint_name):
+def altium_header(footprint_name):
     return """Var
     CurrentLib    : IPCB_Library;
     NewPCBLibComp : IPCB_LibComponent;
@@ -27,9 +27,9 @@ Begin
 
 
 #------------------------------------------------------------------------------
-# repeat for every pad
+# Create a pad for each bond
 #------------------------------------------------------------------------------
-def bond(x1, y1, x2, y2, dx, dy, angle, name): return """
+def altium_pad(bond, DX, DY): return """
     NewPad := PcbServer.PCBObjectFactory(ePadObject,eNoDimension,eCreate_Default);
     NewPad.X        := MMsToCoord(%.3f);
     NewPad.Y        := MMSToCoord(%.3f);
@@ -54,12 +54,13 @@ def bond(x1, y1, x2, y2, dx, dy, angle, name): return """
     PCBServer.SendMessageToRobots(NewPCBLibComp.I_ObjectAddress,c_Broadcast,
                                   PCBM_BoardRegisteration,NewTrack.I_ObjectAddress)
 
-""" % (x2, y2, dx, dy, angle, name, x1, y1, x2, y2)
+""" % (bond.p1.x/1000.0, bond.p2.y/1000.0, DX, DY, bond.phi*180/math.pi, bond.name,
+       bond.p1.x/1000.0, bond.p1.y/1000.0, bond.p2.x/1000.0, bond.p2.y/1000.0)
 
 #------------------------------------------------------------------------------
-# end of .pas file
+# End of Altium .pas file
 #------------------------------------------------------------------------------
-footer = """
+altium_footer = """
     PCBServer.SendMessageToRobots(CurrentLib.Board.I_ObjectAddress,c_Broadcast,
                                   PCBM_BoardRegisteration,NewPCBLibComp.I_ObjectAddress);
     PCBServer.PostProcess;
@@ -71,50 +72,14 @@ End.
 
 
 #------------------------------------------------------------------------------
-# read & process pattern file
+# Main
 #------------------------------------------------------------------------------
-def read_pattern_file(pattern_file, angle_offset=0, pad_number_offset=0):
-    s = ''
-    with open(pattern_file) as f:
-        for (i, line) in enumerate(f):
-            if not line.startswith('#'):
-                l = line.split()
-                [x1, y1] = [float(x)/1000 for x in l[0:2]]
-                [x2, y2] = [float(x)/1000 for x in l[3:5]]
-                angle = int(l[5])
-
-                s += bond(x1, y1, x2, y2, DX, DY,
-                          angle+angle_offset, str(i+pad_number_offset))
-    return s
-
-
-#------------------------------------------------------------------------------
-# pad geometry definition
-#------------------------------------------------------------------------------
-angle_offset = {'E': 0, 'N': 90, 'W': 180, 'S': 270}
 DX = 0.3
 DY = 0.15
 
-
-#------------------------------------------------------------------------------
-# main
-#------------------------------------------------------------------------------
-def create_delphiscript_file(footprint_name, pattern_file):
-    print header(footprint_name)
-    #print read_pattern_file(pattern_file, angle_offset['E']) # "north" edge of the chip
-    print read_pattern_file(pattern_file, angle_offset['N']) # "north" edge of the chip
-    #print read_pattern_file(pattern_file, angle_offset['W']) # "north" edge of the chip
-    #print read_pattern_file(pattern_file, angle_offset['S']) # "north" edge of the chip
-    print footer
-
-if __name__=='__main__':
-    import sys
-
-    if len(sys.argv) < 3:
-        print 'usage: %s <footprint_name> <pattern_filename>' % sys.argv[0]
-
-    else:
-        footprint_name = sys.argv[1]
-        pattern_file = sys.argv[2]
-        create_delphiscript_file(footprint_name, pattern_file)
+def bonds_output_altium(bonds, footprint_name, f=None):
+    print >> f, altium_header(footprint_name)
+    for bond in bonds:
+        print >> f, altium_pad(bond, DX, DY)
+    print >> f, altium_footer
 

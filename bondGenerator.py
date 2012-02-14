@@ -270,3 +270,7 @@ if __name__=='__main__':
     with open('bondspstest.ps', 'w') as f:
         bonds_output_postscript(bonds, f)
 
+    from bondOutputAltium import *
+    with open('spadic10.pas', 'w') as f:
+        bonds_output_altium(bonds, 'spadic10', f)
+
