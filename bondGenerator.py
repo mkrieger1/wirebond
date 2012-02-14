@@ -89,10 +89,10 @@ def read_chip_pad_definitions(filename):
     f = open(filename)
     
     # read number of rows and radii
-    rings = map(int, f.readline().split())
-    Nrow = rings[0] # TO DO: change in input file format
-                    # do not specify number of rings, only their radii
-    Ring = rings[1:] # --> Nrow = len(Ring)
+    ringline = map(int, f.readline().split())
+    Nrings = ringline[0] # TO DO: change in input file format
+                         # do not specify number of rings, only their radii
+    rings = ringline[1:] # --> Nrings = len(rings)
 
     # read angles
     angles = map(int, f.readline().split())
@@ -114,7 +114,7 @@ def read_chip_pad_definitions(filename):
         p1 = Point2D(xpos, 0)
         p2 = Point2D(0, 0)
         row = int(pad)-1
-        l = Ring[row]
+        l = rings[row]
         b = Bond(str(padnumber), p1, p2, phi, l, row)
         b.calc_p2_from_lphi()
         bonds.append(b)
@@ -124,16 +124,19 @@ def read_chip_pad_definitions(filename):
 
     f.close()
 
-    return (bonds, Ring)
+    return (rings, angles, pitch, bonds)
 
 
 #------------------------------------------------------------------------------
 # Step 2 - ?
 #------------------------------------------------------------------------------
-def iterate_bonds(bonds, NITER, shiftInterposer=False):
+def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
+    DMIN = pitch
+    N = len(bonds)
+
     for it in range(NITER):
         if shiftInterposer:
-            for i in range(1, len(bonds)):
+            for i in range(1, N):
                 pass
 #               float d12 = PointDistance(BB[i-1], BB[i  ]);  // shift on interposer
 #               float d23 = PointDistance(BB[i  ], BB[i+1]);
@@ -145,13 +148,45 @@ def iterate_bonds(bonds, NITER, shiftInterposer=False):
         d_min = -1
         npair = 0
 
-        for i in range(1, len(bonds)):
+        for i in range(1, N):
             if (bonds[i-1].row == bonds[i].row):
                 dist = pointDistance(bonds[i-1], bonds[i])
                 d_av += dist
                 d_min = dist if (d_min == -1) else min(d_min, dist)
                 npair += 1
         d_av /= npair
+
+        for i in range(1, N-1):
+            inext = i+1
+            iprev = i-1
+            prev_is_same_row = (bonds[iprev].row == bonds[i].row)
+            next_is_same_row = (bonds[inext].row == bonds[i].row)
+            d12 = pointDistance(bonds[iprev], bonds[i])
+            d23 = pointDistance(bonds[i], bonds[iprev])
+            d13 = d12 + d23
+
+            if (prev_is_same_row and next_is_same_row):
+                dav = d13 / 2.0
+                shift = d12 - dav
+                bonds[i].rotate_dist(shift)
+
+            else:
+                d12_target = d_av if prev_is_same_row else DMIN
+                d23_target = d_av if next_is_same_row else DMIN
+                d13_target = d12_target + d23_target
+
+                shift1 = 0 if (iprev == 0) else (d13 - d13_target) / 2.0
+                shift3 = -(d13 - d13_target - shift1)
+                shift2 = shift1 + d12_target - d12
+
+                if (inext == N_1):
+                    shift1 -= shift3
+                    shift2 -= shift3
+                    shift3 -= shift3 # 0
+
+                bonds[iprev].rotate_dist(-shift1)
+                bonds[i    ].rotate_dist(-shift2)
+                bonds[inext].rotate_dist(-shift3)
         
 
 #//benoetigt! (Schritt 2)
