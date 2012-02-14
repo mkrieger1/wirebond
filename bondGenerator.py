@@ -22,7 +22,7 @@ class Point2D():
         self.x = float(x)
         self.y = float(y)
 
-    def __str__(self):
+    def __str__(self): # --> "str(p)" returns "p.__str__()"
         return "(%7.1f, %7.1f)" % (self.x, self.y)
 
 class Bond():
@@ -78,6 +78,9 @@ def distance2(bond, point2d):
     dy = (b.p2.y - a.y)
     return abs(dx*diry - dy*dirx)
 
+def pointDistance(bond1, bond2):
+    return max(distance(bond1, bond2.p2), distance(bond2, bond1.p2))
+
 
 #------------------------------------------------------------------------------
 # Step 1 - Read chip pad geometry from file and create a "Bond" for each pad
@@ -121,12 +124,35 @@ def read_chip_pad_definitions(filename):
 
     f.close()
 
-    return bonds
+    return (bonds, Ring)
 
 
 #------------------------------------------------------------------------------
 # Step 2 - ?
 #------------------------------------------------------------------------------
+def iterate_bonds(bonds, NITER, shiftInterposer=False):
+    for it in range(NITER):
+        if shiftInterposer:
+            for i in range(1, len(bonds)):
+                pass
+#               float d12 = PointDistance(BB[i-1], BB[i  ]);  // shift on interposer
+#               float d23 = PointDistance(BB[i  ], BB[i+1]);
+#               float dav = (d12 + d23) / 2.0;
+#               float dx = PI[i].x - PI[i-1].x;
+#               PI[i].x = PI[i-1].x + dx * dav / d12;
+        
+        d_av = 0
+        d_min = -1
+        npair = 0
+
+        for i in range(1, len(bonds)):
+            if (bonds[i-1].row == bonds[i].row):
+                dist = pointDistance(bonds[i-1], bonds[i])
+                d_av += dist
+                d_min = dist if (d_min == -1) else min(d_min, dist)
+                npair += 1
+        d_av /= npair
+        
 
 #//benoetigt! (Schritt 2)
 #void __fastcall TForm1::ButtonIterateClick(TObject *Sender)
