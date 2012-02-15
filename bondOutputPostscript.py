@@ -80,7 +80,17 @@ def postscript_bond(bond):
 def postscript_footer(per_mm=100):
     return """grestore } def
 
-105 mm 120 mm translate %.1f per_mm DrawBonds
+105 mm 120 mm translate
+
+gsave
+%.1f per_mm DrawBonds
+grestore
+
+gsave
+1 setlinewidth
+-5 mm 0 mm moveto 5 mm 0 mm lineto stroke
+0 mm -5 mm moveto 0 mm 5 mm lineto stroke
+grestore
 
 showpage 
 """ % per_mm

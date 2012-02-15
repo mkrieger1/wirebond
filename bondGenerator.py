@@ -311,7 +311,7 @@ def clean_up(bonds, rings, d_av):
 #------------------------------------------------------------------------------
 if __name__=='__main__':
     (rings, angles, d_min, bonds) = \
-      read_chip_pad_definitions('input/pattern_all.txt')
+      read_chip_pad_definitions('input/spadic10_pads.txt')
     # test
     #pitch = 95
     #(bonds, d_av, d_min) = \
