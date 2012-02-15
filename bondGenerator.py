@@ -12,6 +12,7 @@
 #------------------------------------------------------------------------------
 
 import math
+import numpy as np
 
 #------------------------------------------------------------------------------
 # Classes
@@ -34,6 +35,12 @@ class Point2D():
         x = self.x - p.x
         y = self.y - p.y
         return Point2D(x, y)
+
+    def __mul__(self, a): # overload "*" operator (bond * a)
+        x = a*self.x
+        y = a*self.y
+        return Point2D(x, y)
+    #self.__rmul__ = self.__mul__ # reverse (a * bond)
 
 class Bond():
     def __init__(self, name, p1, p2, phi=0, l=0, row=0):
@@ -92,6 +99,34 @@ def distance2(bond, point2d):
 
 def pointDistance(bond1, bond2):
     return max(distance(bond1, bond2.p2), distance(bond2, bond1.p2))
+
+def bondIntersect(bond1, bond2):
+    parallel = not ((bond2.phi - bond1.phi) % math.pi)
+    if not parallel:
+        l1   = bond1.l;    l2   = bond2.l
+        phi1 = bond1.phi;  phi2 = bond2.phi
+        x1   = bond1.p1.x; x2   = bond2.p1.x
+        y1   = bond1.p1.y; y2   = bond2.p1.y
+
+        # A.q = p
+        A = np.array([[l1*math.cos(phi1), -l2*math.cos(phi2)],
+                      [l1*math.sin(phi1), -l2*math.sin(phi2)]])
+        p = np.array([[x2-x1],
+                      [y2-y1]])
+
+        # q = Ainv.p
+        Ainv = np.linalg.inv(A)
+        q = np.dot(Ainv, p)
+
+        # ti: position of intersection on bond_i
+        # ti = 0 --> p1 (pad on chip)
+        # ti = 1 --> p2 (pad on PCB)
+        (t1, t2) = (q[0][0], q[1][0])
+
+    else: # parallel
+        (t1, t2) = (None, None)
+
+    return (t1, t2)
 
 
 #------------------------------------------------------------------------------
@@ -313,10 +348,24 @@ if __name__=='__main__':
     (rings, angles, d_min, bonds) = \
       read_chip_pad_definitions('input/spadic10_pads.txt')
     # test
-    #pitch = 95
-    #(bonds, d_av, d_min) = \
-    #  iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
+    pitch = 95
+    (bonds, d_av, d_min) = \
+      iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
     #bonds = clean_up(bonds, rings, d_av)
+
+    #print len(bonds)
+    #bond1 = bonds[0]
+    #bond2 = bonds[100]
+    #print bond1
+    #print bond2
+    #(t1, t2) = bondIntersect(bond1, bond2)
+    #print t1, t2
+    #d1 = t1*bond1.l * Point2D(math.cos(bond1.phi), math.sin(bond1.phi))
+    #d2 = t2*bond2.l * Point2D(math.cos(bond2.phi), math.sin(bond2.phi))
+    #i1 = bond1.p1 + d1
+    #i2 = bond2.p1 + d2
+    #print i1
+    #print i2
 
     from bondOutputPostscript import *
     with open('bondspstest.ps', 'w') as f:
