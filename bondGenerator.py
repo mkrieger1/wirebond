@@ -42,6 +42,12 @@ class Point2D():
         return Point2D(x, y)
     #self.__rmul__ = self.__mul__ # reverse (a * bond)
 
+    def rotate(self, phi):
+        x = math.cos(phi)*self.x - math.sin(phi)*self.y
+        y = math.sin(phi)*self.x + math.cos(phi)*self.y
+        self.x = x
+        self.y = y
+
 class Bond():
     def __init__(self, name, p1, p2, phi=0, l=0, row=0):
         self.name = name
