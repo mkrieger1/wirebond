@@ -41,6 +41,7 @@ class Bond():
         self.p1 = p1
         self.p2 = p2
         self.phi = float(phi)
+        self.angle_fixed = False
         self.l = float(l)
         self.row = int(row)
 
@@ -55,8 +56,9 @@ class Bond():
         self.l = math.sqrt(dx**2 + dy**2)
 
     def rotate_angle(self, dphi):
-        self.phi += dphi
-        self.calc_p2_from_lphi()
+        if not angle_fixed:
+            self.phi = (self.phi + dphi) % (2*math.pi)
+            self.calc_p2_from_lphi()
 
     def rotate_dist(self, d):
         self.rotate_angle(d/self.l)
@@ -117,7 +119,9 @@ def read_chip_pad_definitions(filename):
 
         # get min./max. angle
         elif line.startswith('ANGLES'):
-            angles = [int(x)*math.pi/180 for x in line.split()[1:]]
+            angles_int = map(int, line.split()[1:])
+            angles_fixed = not(abs(angles_int[1]-angles_int[0]) == 360)
+            angles = [x*math.pi/180 for x in angles_int]
 
         # get minimum pad distance
         elif line.startswith('D_MIN'):
@@ -162,9 +166,16 @@ def read_chip_pad_definitions(filename):
     step_phi = (angles[1]-angles[0]) / (len(bonds)-1)
     phi = angles[0]
     for b in bonds:
-        b.phi = phi
+        b.phi = phi % (2*math.pi)
         b.calc_p2_from_lphi()
         phi += step_phi
+    if angles_fixed:
+        bonds[ 0].angle_fixed = True
+        bonds[-1].angle_fixed = True
+        print "fixed bond %s to %.1f degrees" % (bonds[0].name, bonds[0].phi*180/math.pi)
+        print "fixed bond %s to %.1f degrees" % (bonds[-1].name, bonds[-1].phi*180/math.pi)
+    else:
+        print "angles not fixed"
 
     return (rings, angles, d_min, bonds)
 
