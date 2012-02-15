@@ -54,7 +54,7 @@ def altium_pad(bond, DX, DY): return """
     PCBServer.SendMessageToRobots(NewPCBLibComp.I_ObjectAddress,c_Broadcast,
                                   PCBM_BoardRegisteration,NewTrack.I_ObjectAddress);
 
-""" % (bond.p1.x/1000.0, bond.p1.y/1000.0, DX, DY, bond.phi*180/math.pi, bond.name,
+""" % (bond.p2.x/1000.0, bond.p2.y/1000.0, DX, DY, bond.phi*180/math.pi, bond.name,
        bond.p1.x/1000.0, bond.p1.y/1000.0, bond.p2.x/1000.0, bond.p2.y/1000.0)
 
 #------------------------------------------------------------------------------
