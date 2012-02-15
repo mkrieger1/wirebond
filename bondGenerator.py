@@ -56,7 +56,7 @@ class Bond():
         self.l = math.sqrt(dx**2 + dy**2)
 
     def rotate_angle(self, dphi):
-        if not angle_fixed:
+        if not self.angle_fixed:
             self.phi = (self.phi + dphi) % (2*math.pi)
             self.calc_p2_from_lphi()
 
