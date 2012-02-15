@@ -166,12 +166,6 @@ def read_chip_pad_definitions(filename):
         b.calc_p2_from_lphi()
         phi += step_phi
 
-    print "found %i rings:" % len(rings), ' '.join(map(str, rings))
-    print "left angle: %.1f, right angle: %.1f" % (angles[1]*180/math.pi,
-                                                   angles[0]*180/math.pi)
-    print "minimum pad distance: %.1f" % d_min
-    for bond in bonds: print bond
-
     return (rings, angles, d_min, bonds)
 
 
@@ -307,6 +301,8 @@ def clean_up(bonds, rings, d_av):
 if __name__=='__main__':
     (rings, angles, d_min, bonds) = \
       read_chip_pad_definitions('input/Pattern_all.txt')
+    # test
+    #pitch = 95
     #(bonds, d_av, d_min) = \
     #  iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
     #bonds = clean_up(bonds, rings, d_av)
