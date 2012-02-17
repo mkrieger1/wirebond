@@ -9,6 +9,9 @@
 #
 # 2012/02/10 initial clone: same functionality without GUI,
 #            aimed for compatibility with input files
+#
+# 2012/02/15 changed format of input file, can now handle arbitrary geometries
+#            to do: update algorithm accordingly
 #------------------------------------------------------------------------------
 
 import math
@@ -36,17 +39,29 @@ class Point2D():
         y = self.y - p.y
         return Point2D(x, y)
 
-    def __mul__(self, a): # overload "*" operator (bond * a)
+    def __mul__(self, a): # overload "*" operator (Point2D * a)
         x = a*self.x
         y = a*self.y
         return Point2D(x, y)
-    #self.__rmul__ = self.__mul__ # reverse (a * bond)
+    __rmul__ = __mul__ # reverse (a * Point2D)
+
+    def __div__(self, a): # overload "/" operator
+        x = self.x/float(a)
+        y = self.y/float(a)
+        return Point2D(x, y)
 
     def rotate(self, phi):
         x = math.cos(phi)*self.x - math.sin(phi)*self.y
         y = math.sin(phi)*self.x + math.cos(phi)*self.y
         self.x = x
         self.y = y
+
+    def norm(self):
+        return math.sqrt(self.x**2 + self.y**2)
+
+    def polar_angle(self):
+        return math.atan2(self.y, self.x) #% (2*math.pi)
+
 
 class Bond():
     def __init__(self, name, p1, p2, phi=0, l=0, row=0):
@@ -57,6 +72,7 @@ class Bond():
         self.angle_fixed = False
         self.l = float(l)
         self.row = int(row)
+        self.forces = []
 
     def calc_p2_from_lphi(self):
         self.p2.x = self.p1.x + self.l * math.cos(self.phi)
@@ -75,6 +91,21 @@ class Bond():
 
     def rotate_dist(self, d):
         self.rotate_angle(d/self.l)
+
+    def polar_offset(self):
+        dphi = self.phi - self.p1.polar_angle()
+        return (dphi + math.pi) % (2*math.pi) - math.pi
+
+    def add_force(self, force):
+        self.forces.append(force)
+
+    def apply_force(self):
+        # start summation from Point2d(0, 0), not from int(0)
+        force = sum(self.forces, Point2D(0,0))
+        self.forces = []
+        # add force to end point and rotate to that angle
+        dphi = (self.p2 - self.p1 + force).polar_angle() - self.phi
+        self.rotate_angle(dphi)
 
     def __str__(self):
         return ("Bond \"%s\" on row %i, %s --> %s, "
@@ -359,19 +390,6 @@ if __name__=='__main__':
       iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
     #bonds = clean_up(bonds, rings, d_av)
 
-    #print len(bonds)
-    #bond1 = bonds[0]
-    #bond2 = bonds[100]
-    #print bond1
-    #print bond2
-    #(t1, t2) = bondIntersect(bond1, bond2)
-    #print t1, t2
-    #d1 = t1*bond1.l * Point2D(math.cos(bond1.phi), math.sin(bond1.phi))
-    #d2 = t2*bond2.l * Point2D(math.cos(bond2.phi), math.sin(bond2.phi))
-    #i1 = bond1.p1 + d1
-    #i2 = bond2.p1 + d2
-    #print i1
-    #print i2
 
     from bondOutputPostscript import *
     with open('bondspstest.ps', 'w') as f:
