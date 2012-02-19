@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 #------------------------------------------------------------------------------
@@ -29,6 +28,9 @@ class Point2D():
     def __str__(self): # --> "str(p)" returns "p.__str__()"
         return "(%7.1f, %7.1f)" % (self.x, self.y)
 
+    def __abs__(self):
+        return math.sqrt(self.x**2 + self.y**2)
+
     def __add__(self, p): # overload "+" operator
         x = self.x + p.x
         y = self.y + p.y
@@ -45,6 +47,9 @@ class Point2D():
         return Point2D(x, y)
     __rmul__ = __mul__ # reverse (a * Point2D)
 
+    def __neg__(self): # "-Point2D"
+        return -1*self
+
     def __div__(self, a): # overload "/" operator
         x = self.x/float(a)
         y = self.y/float(a)
@@ -56,11 +61,14 @@ class Point2D():
         self.x = x
         self.y = y
 
-    def norm(self):
-        return math.sqrt(self.x**2 + self.y**2)
-
     def polar_angle(self):
         return math.atan2(self.y, self.x) #% (2*math.pi)
+
+    def normed(self):
+        return self/abs(self)
+
+    def set_length(self, l):
+        return self.normed()*l
 
 
 class Bond():
@@ -73,6 +81,11 @@ class Bond():
         self.l = float(l)
         self.row = int(row)
         self.forces = []
+
+    def __str__(self):
+        return ("Bond \"%s\" on row %i, %s --> %s, "
+                "phi = %5.1f°, l = %6.1f µm") % (self.name, self.row,
+                str(self.p1), str(self.p2), self.phi*180/math.pi, self.l)
 
     def calc_p2_from_lphi(self):
         self.p2.x = self.p1.x + self.l * math.cos(self.phi)
@@ -96,21 +109,29 @@ class Bond():
         dphi = self.phi - self.p1.polar_angle()
         return (dphi + math.pi) % (2*math.pi) - math.pi
 
+    def in_range(self, other, min_distance=0):
+        closest = abs(self.p1-other.p1)-self.l-other.l
+        return closest < min_distance
+
     def add_force(self, force):
         self.forces.append(force)
 
     def apply_force(self):
-        # start summation from Point2d(0, 0), not from int(0)
+        # start summation from Point2D(0, 0), not from int(0)
         force = sum(self.forces, Point2D(0,0))
         self.forces = []
         # add force to end point and rotate to that angle
         dphi = (self.p2 - self.p1 + force).polar_angle() - self.phi
         self.rotate_angle(dphi)
 
-    def __str__(self):
-        return ("Bond \"%s\" on row %i, %s --> %s, "
-                "phi = %5.1f°, l = %6.1f µm") % (self.name, self.row,
-                str(self.p1), str(self.p2), self.phi*180/math.pi, self.l)
+    def repulsion(self, other, min_distance=0):
+        direction = other.p2 - self.p2 # from self to other
+        d = abs(direction)
+        if d < min_distance:
+            f = direction.set_length((min_distance-d)*0.5)
+            self.add_force(-f)
+            other.add_force(f)
+        
 
 #------------------------------------------------------------------------------
 # Functions
