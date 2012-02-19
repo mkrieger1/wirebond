@@ -44,22 +44,14 @@ for i in range(100):
     #-----------------------
 
     # sort pairs_in_range by their p2 distance
-    pairs_in_range.sort()
+    pairs_in_range.sort() # only needed for displaying min. distance
     p = pairs_in_range[0]
     print "min. p2 distance:", str(p), p.dist_p2,
 
-    # collect all pairs where dist_p2 is actually < min_distance
-    dist = 0
-    popped = []
-    while dist < min_distance:
-        p = pairs_in_range.pop(0)
-        dist = p.dist_p2
-        popped.append(p)
-    # for all collected pairs: add repulsive forces
-    for p in popped:
-        p.repulsion_p2(min_distance)
-    # get all collected pairs back to the rest
-    pairs_in_range += popped
+    # add repulsive forces if necessary
+    for p in pairs_in_range:
+        if p.dist_p2 < min_distance:
+            p.repulsion_p2(min_distance)
 
     #-----------------------
     # pair subset 2: p2-wire distance
