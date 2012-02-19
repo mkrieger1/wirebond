@@ -109,10 +109,6 @@ class Bond():
         dphi = self.phi - self.p1.polar_angle()
         return (dphi + math.pi) % (2*math.pi) - math.pi
 
-    def in_range(self, other, min_distance=0):
-        closest = abs(self.p1-other.p1)-self.l-other.l
-        return closest < min_distance
-
     def add_force(self, force):
         self.forces.append(force)
 
@@ -124,13 +120,43 @@ class Bond():
         dphi = (self.p2 - self.p1 + force).polar_angle() - self.phi
         self.rotate_angle(dphi)
 
-    def repulsion(self, other, min_distance=0):
-        direction = other.p2 - self.p2 # from self to other
-        d = abs(direction)
-        if d < min_distance:
-            f = direction.set_length((min_distance-d)*0.5)
-            self.add_force(-f)
-            other.add_force(f)
+
+class BondPair():
+    def __init__(self, bond1, bond2):
+        self.pair = [bond1, bond2]
+        self.update()
+
+    def update(self):
+        self._dir_p1 = self.pair[1].p1 - self.pair[0].p1
+        self.dist_p1 = abs(self._dir_p1)
+        self._dir_p2 = self.pair[1].p2 - self.pair[0].p2
+        self.dist_p2 = abs(self._dir_p2)
+        self.needs_update = False
+
+    def __str__(self):
+        return '('+self.pair[0].name+', '+self.pair[1].name+')'
+
+    def __lt__(self, other):
+    # BondPair1 < BondPair2
+    # needed for heap                       
+        return self.dist_p2 < other.dist_p2
+
+    def in_range_p2(self, min_distance=0):
+        # endpoints (p2) can only touch if the startpoints (p1) of two bonds
+        # are not too far apart and not too close together
+        d = self.dist_p1
+        bond1 = self.pair[0]
+        bond2 = self.pair[1]
+        return (d < min_distance + (bond1.l + bond2.l) and
+                d > abs(bond1.l - bond2.l) - min_distance)
+
+    def repulsion_p2(self, min_distance=0):
+        if self.dist_p2 < min_distance:
+            f = self._dir_p2.set_length((min_distance-self.dist_p2)*0.5)
+            # scale down
+            self.pair[0].add_force(-f)
+            self.pair[1].add_force(f)
+
         
 
 #------------------------------------------------------------------------------
@@ -158,7 +184,7 @@ def distance2(bond, point2d):
 def pointDistance(bond1, bond2):
     return max(distance(bond1, bond2.p2), distance(bond2, bond1.p2))
 
-def bondIntersect(bond1, bond2):
+def bonds_intersect(bond1, bond2):
     parallel = not ((bond2.phi - bond1.phi) % math.pi)
     if not parallel:
         l1   = bond1.l;    l2   = bond2.l
@@ -185,6 +211,7 @@ def bondIntersect(bond1, bond2):
         (t1, t2) = (None, None)
 
     return (t1, t2)
+
 
 
 #------------------------------------------------------------------------------
