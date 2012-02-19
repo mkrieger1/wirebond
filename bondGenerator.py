@@ -20,7 +20,7 @@ from bondOutputAltium import *
 #    bond.add_force(f.normed()*bond.l)
 #
 
-min_distance = 300
+min_distance = 250
 import heapq
 
 # get all possible pairs of bonds: Npairs = (Nbonds**2-Nbonds)/2
@@ -43,8 +43,8 @@ for i in range(100):
     # pair subset 1: p2-p2 distance
     #-----------------------
 
-    # make a heap out of all selected pairs
-    heapq.heapify(pairs_in_range)
+    # sort pairs_in_range by their p2 distance
+    pairs_in_range.sort()
     p = pairs_in_range[0]
     print "min. p2 distance:", str(p), p.dist_p2,
 
@@ -52,7 +52,7 @@ for i in range(100):
     dist = 0
     popped = []
     while dist < min_distance:
-        p = heapq.heappop(pairs_in_range)
+        p = pairs_in_range.pop(0)
         dist = p.dist_p2
         popped.append(p)
     # for all collected pairs: add repulsive forces
