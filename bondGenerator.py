@@ -20,64 +20,19 @@ from bondOutputAltium import *
 #    bond.add_force(f.normed()*bond.l)
 #
 
-min_distance = 250
 
 # get all possible pairs of bonds: Npairs = (Nbonds**2-Nbonds)/2
-pairs = []
-for i in range(len(bonds)):
-    for j in range(i+1, len(bonds)):
-        pairs.append(BondPair(bonds[i], bonds[j]))
+pairs = create_all_bondpairs(bonds)
 print len(pairs), "pairs"
 
 # select all pairs where the two endpoints (p2) are potentially closer together
 # than min_distance
-pairs_in_range = [p for p in pairs if p.in_range_p2(min_distance)]
-print len(pairs_in_range), "in range"
+pairs_p2 = [p for p in pairs if p.in_range_p2()]
+print len(pairs_p2), "in range"
+
 
 for i in range(100):
-#---------------------------------------------------------------------
-# begin iteration
-#---------------------------------------------------------------------
-    #-----------------------
-    # pair subset 1: p2-p2 distance
-    #-----------------------
-
-    # sort pairs_in_range by their p2 distance
-    pairs_in_range.sort() # only needed for displaying min. distance
-    p = pairs_in_range[0]
-    print "min. p2 distance:", str(p), p.dist_p2,
-
-    # add repulsive forces if necessary
-    for p in pairs_in_range:
-        if p.dist_p2 < min_distance:
-            p.repulsion_p2(min_distance)
-
-    #-----------------------
-    # pair subset 2: p2-wire distance
-    #-----------------------
-
-    #-----------------------
-    # update all bonds
-    #-----------------------
-    for p in pairs_in_range:
-        if any(len(b.forces) for b in p.pair):
-            p.needs_update = True
-    for b in bonds:
-        b.apply_force()
-
-    #-----------------------
-    # update all pairs
-    #-----------------------
-    updated = 0
-    for p in pairs:
-        if p.needs_update:
-            p.update()
-            updated += 1
-    print updated, "pairs updated"
-
-#---------------------------------------------------------------------
-# end iteration
-#---------------------------------------------------------------------
+    process_all_bonds(bonds, pairs, pairs_p2)
 
 
 

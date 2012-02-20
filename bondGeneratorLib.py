@@ -122,9 +122,10 @@ class Bond():
 
 
 class BondPair():
-    def __init__(self, bond1, bond2):
+    def __init__(self, bond1, bond2, min_distance_p2=300):
         self.pair = [bond1, bond2]
         self.update()
+        self.min_distance_p2 = min_distance_p2
 
     def update(self):
         self._dir_p1 = self.pair[1].p1 - self.pair[0].p1
@@ -141,18 +142,19 @@ class BondPair():
     # needed for heap                       
         return self.dist_p2 < other.dist_p2
 
-    def in_range_p2(self, min_distance=0):
+    def in_range_p2(self):
         # endpoints (p2) can only touch if the startpoints (p1) of two bonds
         # are not too far apart and not too close together
         d = self.dist_p1
         bond1 = self.pair[0]
         bond2 = self.pair[1]
-        return (d < min_distance + (bond1.l + bond2.l) and
-                d > abs(bond1.l - bond2.l) - min_distance)
+        return (d < self.min_distance_p2 + (bond1.l + bond2.l) and
+                d > abs(bond1.l - bond2.l) - self.min_distance_p2)
 
-    def repulsion_p2(self, min_distance=0, damp=1.0):
-        if self.dist_p2 < min_distance:
-            f = damp*self._dir_p2.set_length((min_distance-self.dist_p2)*0.5)
+    def repulsion_p2(self, damp=1.0):
+        if self.dist_p2 < self.min_distance_p2:
+            f = damp*self._dir_p2.set_length((self.min_distance_p2 -
+                                              self.dist_p2) * 0.5)
             self.pair[0].add_force(-f)
             self.pair[1].add_force(f)
 
@@ -302,6 +304,43 @@ def read_chip_pad_definitions(filename):
 #------------------------------------------------------------------------------
 # Step 2 - Iteratively shift bonds around
 #------------------------------------------------------------------------------
+def create_all_bondpairs(bonds):
+    pairs = []
+    for i in range(len(bonds)):
+        for j in range(i+1, len(bonds)):
+            pairs.append(BondPair(bonds[i], bonds[j]))
+    return pairs
+
+def mark_processed_pairs(pairs):
+    for p in pairs:
+        if any(len(b.forces) for b in p.pair):
+            p.needs_update = True
+
+def process_pairs_p2(pairs_p2):
+    # sort pairs_in_range by their p2 distance
+    pairs_p2.sort() # only needed for displaying min. distance
+    p = pairs_p2[0]
+    print "min. p2 distance:", str(p), p.dist_p2,
+
+    # add repulsive forces if necessary
+    for p in pairs_p2:
+        if p.dist_p2 < p.min_distance_p2:
+            p.repulsion_p2()
+
+def process_all_bonds(bonds, pairs, pairs_p2):
+    process_pairs_p2(pairs_p2)
+
+    mark_processed_pairs(pairs)
+
+    for b in bonds: b.apply_force()
+
+    updated = 0
+    for p in pairs:
+        if p.needs_update:
+            p.update()
+            updated += 1
+    print updated, "pairs updated"
+
 def iterate_bonds(rings, angles, pitch, bonds, NITER, shiftInterposer=False):
     DMIN = pitch
     N = len(bonds)
