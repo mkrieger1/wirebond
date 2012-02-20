@@ -4,3 +4,7 @@
 *.pyc
 *test.ps
 
+animation/*.ps
+animation/*.png
+animation/*.gif
+

@@ -21,7 +21,6 @@ from bondOutputAltium import *
 #
 
 min_distance = 250
-import heapq
 
 # get all possible pairs of bonds: Npairs = (Nbonds**2-Nbonds)/2
 pairs = []

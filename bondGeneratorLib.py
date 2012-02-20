@@ -150,10 +150,9 @@ class BondPair():
         return (d < min_distance + (bond1.l + bond2.l) and
                 d > abs(bond1.l - bond2.l) - min_distance)
 
-    def repulsion_p2(self, min_distance=0):
+    def repulsion_p2(self, min_distance=0, damp=1.0):
         if self.dist_p2 < min_distance:
-            f = self._dir_p2.set_length((min_distance-self.dist_p2)*0.5)
-            # scale down
+            f = damp*self._dir_p2.set_length((min_distance-self.dist_p2)*0.5)
             self.pair[0].add_force(-f)
             self.pair[1].add_force(f)
 
