@@ -161,6 +161,19 @@ class BondPair():
             self.pair[0].add_force(-f)
             self.pair[1].add_force(f)
 
+    def repulsion_p1_l(self, damp=1.0):
+        for p in [self.pair, list(reversed(self.pair))]:
+            bond1 = p[0]
+            bond2 = p[1]
+            a = bond2.p1-bond1.p1
+            b = bond1.p2-bond1.p1
+            q = bond1.p1 + b.normed()*a.dot(b)/abs(b)
+            print q
+            F = q - bond2.p1
+            if abs(F) < 90:
+                f = abs(q-bond1.p1)/bond1.l*F.set_length(90-abs(F))
+                bond1.add_force(damp*f)
+
         
 
 #------------------------------------------------------------------------------
@@ -335,12 +348,16 @@ def process_pairs_p2(pairs_p2):
 def process_all_bonds(bonds, pairs, pairs_p2):
     process_pairs_p2(pairs_p2)
 
+    # buggy
+    #for p in pairs:
+    #    p.repulsion_p1_l()
+
     mark_processed_pairs(pairs)
 
     for b in bonds: b.apply_force()
 
     updated = 0
-    for p in pairs:
+    for p in pairs_p2:
         if p.needs_update:
             p.update()
             updated += 1
