@@ -55,6 +55,9 @@ class Point2D():
         y = self.y/float(a)
         return Point2D(x, y)
 
+    def dot(self, other):
+        return self.x*other.x + self.y*other.y
+
     def rotate(self, phi):
         x = math.cos(phi)*self.x - math.sin(phi)*self.y
         y = math.sin(phi)*self.x + math.cos(phi)*self.y
