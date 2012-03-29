@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import time
+
 from bondGeneratorLib import *
 from bondOutputPostscript import *
 from bondOutputAltium import *
@@ -31,8 +33,11 @@ pairs_p2 = [p for p in pairs if p.in_range_p2()]
 print len(pairs_p2), "in range"
 
 
+start = time.time()
 for i in range(100):
     process_all_bonds(bonds, pairs, pairs_p2)
+stop = time.time()
+print 'took %.2f seconds.' % (stop-start)
 
 
 
