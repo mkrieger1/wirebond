@@ -311,7 +311,9 @@ def create_all_bondpairs(bonds):
     pairs = []
     for i in range(len(bonds)):
         for j in range(i+1, len(bonds)):
-            pairs.append(BondPair(bonds[i], bonds[j]))
+            min_distance_p2 = 90 if (bonds[i].row == bonds[j].row and
+                                     bonds[i].row in [0, 1, 2]) else 300
+            pairs.append(BondPair(bonds[i], bonds[j], min_distance_p2))
     return pairs
 
 def mark_processed_pairs(pairs):
