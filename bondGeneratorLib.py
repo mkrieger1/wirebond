@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#------------------------------------------------------------------------------
+#==============================================================================
 # This is a clone/port of Peter Fischer's bond generator program
 # from C++ to Python
 #
@@ -11,15 +11,15 @@
 #
 # 2012/02/15 changed format of input file, can now handle arbitrary geometries
 #            to do: update algorithm accordingly
-#------------------------------------------------------------------------------
+#==============================================================================
 
 import math
 import numpy as np
 
-#------------------------------------------------------------------------------
-# Classes
-#------------------------------------------------------------------------------
 
+#==============================================================================
+# Point2D: 2-dimensional vector
+#==============================================================================
 class Point2D():
     def __init__(self, x=0, y=0):
         self.x = float(x)
@@ -64,53 +64,74 @@ class Point2D():
         self.x = x
         self.y = y
 
+    def rotated(self, phi):
+        p = self
+        p.rotate(phi)
+        return Point2D(p.x, p.y)
+
     def polar_angle(self):
         return math.atan2(self.y, self.x) #% (2*math.pi)
 
-    def normed(self):
+    def normalize(self):
+        self.x /= abs(self)
+        self.y /= abs(self)
+
+    def normalized(self):
         return self/abs(self)
 
-    def set_length(self, l):
-        return self.normed()*l
 
-
+#==============================================================================
+# Bond: wire between two endpoints (pchip --> pboard), forces move pboard
+#==============================================================================
 class Bond():
-    def __init__(self, name, p1, p2, phi=0, l=0, row=0):
-        self.name = name
-        self.p1 = p1
-        self.p2 = p2
-        self.phi = float(phi)
-        self.angle_fixed = False
-        self.l = float(l)
-        self.row = int(row)
+    def __init__(self, padnumber, pchip, length, angle, ring=0):
+        self.padnumber = padnumber
+        self.pchip = pchip
+        self.length = float(length)
+        self.angle = float(angle)
+        self.calc_pboard()
+        self.ring = int(ring)
         self.forces = []
 
     def __str__(self):
-        return ("Bond \"%s\" on row %i, %s --> %s, "
-                "phi = %5.1f°, l = %6.1f µm") % (self.name, self.row,
-                str(self.p1), str(self.p2), self.phi*180/math.pi, self.l)
+        return ("Bond #%i on ring %i, %s --> %s, "
+                "angle = %5.1f°, length = %6.1f µm") % (self.padnumber,
+                self.ring, str(self.pchip), str(self.pboard),
+                self.angle*180/math.pi, self.length)
 
-    def calc_p2_from_lphi(self):
-        self.p2.x = self.p1.x + self.l * math.cos(self.phi)
-        self.p2.y = self.p1.y + self.l * math.sin(self.phi)
+    def calc_pboard(self):
+        wire = self.length*Point2d(0, 1).rotated(self.angle)
+        self.pboard = self.pchip + wire
 
-    def calc_lphi_from_p2(self):
-        dx = self.p2.x-self.p1.x
-        dy = self.p2.y-self.p1.y
-        self.phi = math.atan2(dy, dx)
-        self.l = math.sqrt(dx**2 + dy**2)
+    def calc_length_angle(self):
+        wire = self.pboard - self.pchip
+        self.length = abs(wire)
+        self.angle = wire.polar_angle()
 
-    def rotate_angle(self, dphi):
-        if not self.angle_fixed:
-            self.phi = (self.phi + dphi) % (2*math.pi)
-            self.calc_p2_from_lphi()
+    def set_pboard(self, pboard):
+        self.pboard = pboard
+        self.calc_length_angle()
 
-    def rotate_dist(self, d):
-        self.rotate_angle(d/self.l)
+    def set_length(self, length):
+        self.length = length
+        self.calc_pboard()
 
-    def polar_offset(self):
-        dphi = self.phi - self.p1.polar_angle()
-        return (dphi + math.pi) % (2*math.pi) - math.pi
+    def set_angle(self, angle):
+        self.angle = angle
+        self.calc_pboard()
+
+    def stretch(self, dist):
+        self.set_length(self.length + dist)
+
+    def rotate(self, phi):
+        self.set_angle((self.angle + phi) % (2*math.pi))
+
+    def move(self, vector):
+        self.set_pboard(self.pboard + vector)
+
+    #def polar_offset(self):
+    #    dphi = self.angle - self.pchip.polar_angle()
+    #    return (dphi + math.pi) % (2*math.pi) - math.pi
 
     def add_force(self, force):
         self.forces.append(force)
@@ -120,87 +141,57 @@ class Bond():
         force = sum(self.forces, Point2D(0,0))
         self.forces = []
         # add force to end point and rotate to that angle
-        dphi = (self.p2 - self.p1 + force).polar_angle() - self.phi
-        self.rotate_angle(dphi)
+        self.set_angle((self.pboard - self.pchip + force).polar_angle())
 
 
+#==============================================================================
+# BondPair: pair of two bonds
+#==============================================================================
 class BondPair():
-    def __init__(self, bond1, bond2, min_distance_p2=300):
-        self.pair = [bond1, bond2]
-        self.update()
-        self.min_distance_p2 = min_distance_p2
+    def __init__(self, bonds, min_dist_pboard=300):
+        self.bonds = bonds
+        self.min_dist_pboard = min_dist_pboard
+        self._needs_update = True
 
-    def update(self):
-        self._dir_p1 = self.pair[1].p1 - self.pair[0].p1
-        self.dist_p1 = abs(self._dir_p1)
-        self._dir_p2 = self.pair[1].p2 - self.pair[0].p2
-        self.dist_p2 = abs(self._dir_p2)
-        self.needs_update = False
+    def dist_pboard(self):
+        if self._needs_update:
+            self._dist_pboard = abs(self.bonds[1].pboard -
+                                    self.bonds[0].pboard)
+            self._needs_update = False
+        return self._dist_pboard
 
-    def __str__(self):
-        return '('+self.pair[0].name+', '+self.pair[1].name+')'
+    def repulsion_pboard(self, damp=1.0):
+        if self.dist_pboard() < self.min_dist_pboard:
+            dir_ = (self.bonds[0].pboard - self.bonds[1].pboard).normalized()
+            f = dir_ * (self.min_dist_pboard-self.dist_pboard()) * 0.5 * damp
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
 
-    def __lt__(self, other):
-    # BondPair1 < BondPair2
-    # needed for heap                       
-        return self.dist_p2 < other.dist_p2
+    #def update(self):
+    #    self._dir_p1 = self.pair[1].pchip - self.pair[0].pchip
+    #    self.dist_p1 = abs(self._dir_p1)
+    #    self._dir_p2 = self.pair[1].pboard - self.pair[0].pboard
+    #    self.dist_p2 = abs(self._dir_p2)
+    #    self._needs_update = False
 
-    def in_range_p2(self):
-        # endpoints (p2) can only touch if the startpoints (p1) of two bonds
-        # are not too far apart and not too close together
-        d = self.dist_p1
-        bond1 = self.pair[0]
-        bond2 = self.pair[1]
-        return (d < self.min_distance_p2 + (bond1.l + bond2.l) and
-                d > abs(bond1.l - bond2.l) - self.min_distance_p2)
-
-    def repulsion_p2(self, damp=1.0):
-        if self.dist_p2 < self.min_distance_p2:
-            f = damp*self._dir_p2.set_length((self.min_distance_p2 -
-                                              self.dist_p2) * 0.5)
-            self.pair[0].add_force(-f)
-            self.pair[1].add_force(f)
-
-    def repulsion_p1_l(self, damp=1.0):
-        for p in [self.pair, list(reversed(self.pair))]:
-            bond1 = p[0]
-            bond2 = p[1]
-            a = bond2.p1-bond1.p1
-            b = bond1.p2-bond1.p1
-            q = bond1.p1 + b.normed()*a.dot(b)/abs(b)
-            print q
-            F = q - bond2.p1
-            if abs(F) < 90:
-                f = abs(q-bond1.p1)/bond1.l*F.set_length(90-abs(F))
-                bond1.add_force(damp*f)
+    #def repulsion_p1_l(self, damp=1.0):
+    #    for p in [self.pair, list(reversed(self.pair))]:
+    #        bond1 = p[0]
+    #        bond2 = p[1]
+    #        a = bond2.pchip-bond1.pchip
+    #        b = bond1.pboard-bond1.pchip
+    #        q = bond1.pchip + b.normed()*a.dot(b)/abs(b)
+    #        print q
+    #        F = q - bond2.pchip
+    #        if abs(F) < 90:
+    #            f = abs(q-bond1.pchip)/bond1.length*F.set_length(90-abs(F))
+    #            bond1.add_force(damp*f)
 
         
 
 #------------------------------------------------------------------------------
 # Functions
 #------------------------------------------------------------------------------
-def distance(bond, point2d):
-    b = bond
-    a = point2d
-    dirx = math.cos(b.phi)
-    diry = math.sin(b.phi)
-    lambd = (b.p2.x - a.x) * dirx + (b.p2.y - a.y) * diry
-    dx = a.x - b.p2.x + lambd * dirx
-    dy = a.y - b.p2.y + lambd * diry
-    return math.sqrt(dx**2+dy**2) if (lambd > 0) else 0
-
-def distance2(bond, point2d):
-    b = bond
-    a = point2d
-    dirx = math.cos(b.phi)
-    diry = math.sin(b.phi)
-    dx = (b.p2.x - a.x)
-    dy = (b.p2.y - a.y)
-    return abs(dx*diry - dy*dirx)
-
-def pointDistance(bond1, bond2):
-    return max(distance(bond1, bond2.p2), distance(bond2, bond1.p2))
-
 def bonds_intersect(bond1, bond2):
     parallel = not ((bond2.phi - bond1.phi) % math.pi)
     if not parallel:
@@ -237,14 +228,14 @@ def bonds_intersect(bond1, bond2):
 def get_valid_lines(filename):
     with open(filename) as f:
         for line_raw in f:
-            line = line_raw.lstrip().rstrip()
+            line = line_raw.strip()
             if (not line.startswith('#') and len(line)):
                 yield line
 
 def read_chip_pad_definitions(filename):
     pos = Point2D(0, 0)
     incr = Point2D(0, 0)
-    bonds = []
+    bonds = {}
     padnumber = 0
     read_pads = False
 
@@ -286,16 +277,15 @@ def read_chip_pad_definitions(filename):
             pos -= incr # undo position change after last pad
 
         # read pads if in read_pad mode and
-        # create a bond for each pad with row > -1
+        # create a bond for each pad with ring > -1
         elif read_pads:
             pads = map(int, line.split())
             for pad in pads:
-                row = pad-1
-                if row > -1: # row == -1 is an empty pad
-                    p1 = Point2D(pos.x, pos.y)
-                    p2 = Point2D(0, 0)
-                    l = rings[row]
-                    bonds.append(Bond(str(padnumber), p1, p2, 0, l, row))
+                ring = pad-1
+                if ring > -1: # ring == -1 is an empty pad
+                    pchip = Point2D(pos.x, pos.y)
+                    length = rings[ring]
+                    bonds.append(Bond(padnumber, pchip, length, 0, ring))
                 pos += incr
                 padnumber += 1
 
@@ -303,18 +293,17 @@ def read_chip_pad_definitions(filename):
     step_phi = (angles[1]-angles[0]) / (len(bonds)-1)
     phi = angles[0]
     for b in bonds:
-        b.phi = phi % (2*math.pi)
-        b.calc_p2_from_lphi()
+        b.set_angle(phi)
         phi += step_phi
-    if angles_fixed:
-        bonds[ 0].angle_fixed = True
-        bonds[-1].angle_fixed = True
-        print "fixed bond %s to %.1f degrees" % (bonds[0].name, bonds[0].phi*180/math.pi)
-        print "fixed bond %s to %.1f degrees" % (bonds[-1].name, bonds[-1].phi*180/math.pi)
-    else:
-        print "angles not fixed"
+    #if angles_fixed:
+    #    bonds[ 0].angle_fixed = True
+    #    bonds[-1].angle_fixed = True
+    #    print "fixed bond %s to %.1f degrees" % (bonds[0].name, bonds[0].phi*180/math.pi)
+    #    print "fixed bond %s to %.1f degrees" % (bonds[-1].name, bonds[-1].phi*180/math.pi)
+    #else:
+    #    print "angles not fixed"
 
-    return (rings, angles, d_min, bonds)
+    return (rings, bonds)
 
 
 #------------------------------------------------------------------------------
@@ -324,15 +313,19 @@ def create_all_bondpairs(bonds):
     pairs = []
     for i in range(len(bonds)):
         for j in range(i+1, len(bonds)):
-            min_distance_p2 = 90 if (bonds[i].row == bonds[j].row and
-                                     bonds[i].row in [0, 1, 2]) else 300
-            pairs.append(BondPair(bonds[i], bonds[j], min_distance_p2))
+            min_dist_pboard = 90 if (bonds[i].ring == bonds[j].ring and
+                                     bonds[i].ring in [0, 1, 2]) else 300
+            pairs.append(BondPair(bonds[i], bonds[j], min_dist_pboard))
     return pairs
+
+def neighbor_bonds(bonds):
+    pairs = []
+
 
 def mark_processed_pairs(pairs):
     for p in pairs:
         if any(len(b.forces) for b in p.pair):
-            p.needs_update = True
+            p._needs_update = True
 
 def process_pairs_p2(pairs_p2):
     # sort pairs_in_range by their p2 distance
@@ -342,7 +335,7 @@ def process_pairs_p2(pairs_p2):
 
     # add repulsive forces if necessary
     for p in pairs_p2:
-        if p.dist_p2 < p.min_distance_p2:
+        if p.dist_p2 < p.min_dist_pboard:
             p.repulsion_p2()
 
 def process_all_bonds(bonds, pairs, pairs_p2):
@@ -358,7 +351,7 @@ def process_all_bonds(bonds, pairs, pairs_p2):
 
     updated = 0
     for p in pairs_p2:
-        if p.needs_update:
+        if p._needs_update:
             p.update()
             updated += 1
     print updated, "pairs updated"
