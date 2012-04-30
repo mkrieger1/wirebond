@@ -70,7 +70,7 @@ class Point2D():
         return Point2D(p.x, p.y)
 
     def polar_angle(self):
-        return math.atan2(self.y, self.x) #% (2*math.pi)
+        return math.atan2(self.y, self.x) % (2*math.pi)
 
     def normalize(self):
         self.x /= abs(self)
@@ -100,7 +100,7 @@ class Bond():
                 self.angle*180/math.pi, self.length)
 
     def calc_pboard(self):
-        wire = self.length*Point2d(0, 1).rotated(self.angle)
+        wire = self.length*Point2D(1, 0).rotated(self.angle)
         self.pboard = self.pchip + wire
 
     def calc_length_angle(self):
@@ -235,7 +235,7 @@ def get_valid_lines(filename):
 def read_chip_pad_definitions(filename):
     pos = Point2D(0, 0)
     incr = Point2D(0, 0)
-    bonds = {}
+    bonds = []
     padnumber = 0
     read_pads = False
 
@@ -318,8 +318,32 @@ def create_all_bondpairs(bonds):
             pairs.append(BondPair(bonds[i], bonds[j], min_dist_pboard))
     return pairs
 
-def neighbor_bonds(bonds):
+def neighbor_pairs(rings, bonds, center=None):
     pairs = []
+    # sort all bonds clockwise with respect to their chip pad position use
+    # center of gravity or custom center point (custom is useful if the bond
+    # pads are not distributed evenly around the whole chip, e.g. only one
+    # edge)
+    if center is None:
+        center = sum((b.pchip for b in bonds), Point2D(0, 0))/len(bonds)
+    bonds_cw = list(sorted(bonds,
+                    key=lambda b: (b.pchip-center).polar_angle()))
+    # for each bond, collect the next other bond on each ring (do this only
+    # in clockwise direction to avoid duplicate pairs)
+    for (i, bond) in enumerate(bonds_cw):
+        neighbors = [None for ring in rings]
+        otherbonds = iter(bonds_cw[i+1:] + bonds_cw[:i])
+                        # i+1, i+2, ..., 0, 1, ..., i-1
+        while not all(neighbors): # bool(None) == False, bool(any bond) == True
+            otherbond = otherbonds.next()
+            ring = otherbond.ring
+            if neighbors[ring] is None:
+                neighbors[ring] = otherbond
+        for neighbor in neighbors:
+            pairs.append(BondPair([bond, neighbor]))
+    # len(pairs) == len(rings) * len(bonds)
+    return pairs
+
 
 
 def mark_processed_pairs(pairs):
