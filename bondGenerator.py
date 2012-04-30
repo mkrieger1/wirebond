@@ -4,46 +4,46 @@
 import time
 
 from bondGeneratorLib import *
+from bondInputFile import *
 from bondOutputPostscript import *
 from bondOutputAltium import *
 
-# read input file
-(rings, angles, d_min, bonds) = \
-  read_chip_pad_definitions('input/spadic10_pads.txt')
+# read input file and create list of neighboring bond pairs
+(bonds, rings) = read_bond_definition('input/spadic10_pads.txt')
+pairs = neighbor_pairs(bonds, rings)
 
-# testing bond manipulating algorithms
-#pitch = 95
-#(bonds, d_av, d_min) = \
-#  iterate_bonds(rings, angles, pitch, bonds, 100, shiftInterposer=False)
-#bonds = clean_up(bonds, rings, d_av)
+# set minimum distance for bond position on pcb for each pair
+for pair in pairs:
+    rings = [bond.ring for bond in pair.bonds]
+    if not rings[0] == rings[1]:
+        pair.min_dist_pboard = 300
+    elif rings[0] == 3: # == rings[1]
+        pair.min_dist_pboard = 300
+    else:
+        pair.min_dist_pboard = 90
 
 #for bond in bonds:
 #    f = bond.p1 - Point2D(-1000, 2000)
 #    bond.add_force(f.normed()*bond.l)
-#
 
-
-# get all possible pairs of bonds: Npairs = (Nbonds**2-Nbonds)/2
-pairs = create_all_bondpairs(bonds)
-print len(pairs), "pairs"
-
-# select all pairs where the two endpoints (p2) are potentially closer together
-# than min_distance
-pairs_p2 = [p for p in pairs if p.in_range_p2()]
-print len(pairs_p2), "in range"
-
-
+# start iteration
 start = time.time()
-for i in range(100):
-    process_all_bonds(bonds, pairs, pairs_p2)
+
+NITER = 100
+for i in range(NITER):
+    # repulsion of pads on pcb
+    for pair in pairs:
+        pair.repulsion_pboard()
+
+    mark_for_update(pairs)
+
+    for bond in bonds:
+        bond.apply_force()
+        
 stop = time.time()
 print 'took %.2f seconds.' % (stop-start)
 
 
-
 with open('bondspstest.ps', 'w') as f:
     bonds_output_postscript(bonds, f)
-
-#with open('spadic10.pas', 'w') as f:
-#    bonds_output_altium(bonds, 'spadic10', f)
 
