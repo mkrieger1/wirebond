@@ -167,18 +167,21 @@ class BondPair():
             self.bonds[0].add_force(f)
             self.bonds[1].add_force(-f)
 
-    #def repulsion_p1_l(self, damp=1.0):
-    #    for p in [self.pair, list(reversed(self.pair))]:
-    #        bond1 = p[0]
-    #        bond2 = p[1]
-    #        a = bond2.pchip-bond1.pchip
-    #        b = bond1.pboard-bond1.pchip
-    #        q = bond1.pchip + b.normed()*a.dot(b)/abs(b)
-    #        print q
-    #        F = q - bond2.pchip
-    #        if abs(F) < 90:
-    #            f = abs(q-bond1.pchip)/bond1.length*F.set_length(90-abs(F))
-    #            bond1.add_force(damp*f)
+    def repulsion_pboard_wire(self, damp=1.0):
+        for [bond, otherbond] in [self.bonds, list(reversed(self.bonds))]:
+            #bond1 = bonds[0]
+            #bond2 = bonds[1]
+            #a = bonds[1].pchip-bonds[0].pchip
+            #b = bonds[0].pboard-bonds[0].pchip
+            #q = bond1.pchip + b.normed()*a.dot(b)/abs(b)
+            #print q
+            #F = q - bond2.pchip
+            (dist, t) = dist_point_line(otherbond.pboard, [bond.pchip, bond.pboard])
+            if t > 0 and t < 1 and abs(dist) < 150:
+                #f = abs(q-bond1.pchip)/bond1.length*F.set_length(90-abs(F))
+                f = damp*(150-abs(dist))*dist.normalized()
+                bond.add_force(0.5*f)
+                otherbond.add_force(-0.5*f)
 
 
 #==============================================================================
@@ -188,7 +191,7 @@ def all_pairs(bonds):
     pairs = []
     for i in range(len(bonds)):
         for j in range(i+1, len(bonds)):
-            pairs.append(BondPair(bonds[i], bonds[j]))
+            pairs.append(BondPair([bonds[i], bonds[j]]))
     return pairs
 
 
@@ -231,6 +234,12 @@ def mark_for_update(pairs):
 #==============================================================================
 # geometric calculations
 #==============================================================================
+def dist_point_line(point, line):
+    a = point-line[0]
+    b = (line[1]-line[0]).normalized()
+    t = a.dot(b)
+    return (line[0] + b*t - point, t/abs(line[1]-line[0]))
+
 def bonds_intersect(bond1, bond2):
     parallel = not ((bond2.phi - bond1.phi) % math.pi)
     if not parallel:
