@@ -7,7 +7,8 @@
 for file in bondspstest*.ps
 do
     echo converting $file
-    gs -sDEVICE=png16m -sOutputFile=$file.png -r150 -dBATCH -dNOPAUSE $file $2>/dev/null
+    gs -sDEVICE=png16m -sOutputFile=$file.png -r150 -dGraphicsAlphaBits=4 \
+       -dBATCH -dNOPAUSE $file $2>/dev/null
 done
 
 echo creating animated GIF...
@@ -15,5 +16,5 @@ convert bondspstest*.png -trim +repage animation.gif
 
 echo cleaning up...
 rm bondspstest*.png
-#rm bondspstest*.ps
+rm bondspstest*.ps
 
