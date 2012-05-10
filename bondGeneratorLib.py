@@ -148,40 +148,65 @@ class Bond():
 # BondPair: pair of two bonds
 #==============================================================================
 class BondPair():
-    def __init__(self, bonds, min_dist_pboard=None):
+    def __init__(self, bonds, min_dist_pboard=None,
+                              min_dist_pboard_wire=None,
+                              min_dist_pchip_wire=None):
         self.bonds = bonds
-        self.min_dist_pboard = min_dist_pboard
-        self._needs_update = True
+        self.set_min_dist_pboard(min_dist_pboard)
+        self.set_min_dist_pboard_wire(min_dist_pboard_wire)
+        self.set_min_dist_pchip_wire(min_dist_pchip_wire)
 
-    def dist_pboard(self):
-        if self._needs_update:
-            self._dist_pboard = abs(self.bonds[1].pboard -
-                                    self.bonds[0].pboard)
-            self._needs_update = False
-        return self._dist_pboard
+    def _bonds_perm(self, index):
+        return [self.bonds[index], self.bonds[1-index]]
+
+    def _dist_pboard(self):
+        [bond, otherbond] = self._bonds_perm(0)
+        return bond.pboard-otherbond.pboard
+
+    def _dist_pboard_wire(self, index):
+        [bond, otherbond] = self._bonds_perm(index)
+        return dist_point_line(otherbond.pboard, [bond.pchip, bond.pboard])
+
+    def _dist_pchip_wire(self, index):
+        [bond, otherbond] = self._bonds_perm(index)
+        return dist_point_line(otherbond.pchip, [bond.pchip, bond.pboard])
+
+    def set_min_dist_pboard(self, value):
+        self._min_dist_pboard = value
+
+    def set_min_dist_pboard_wire(self, value):
+        self._min_dist_pboard_wire = value
+
+    def set_min_dist_pchip_wire(self, value):
+        self._min_dist_pchip_wire = value
 
     def repulsion_pboard(self, damp=1.0):
-        if self.dist_pboard() < self.min_dist_pboard:
-            dir_ = (self.bonds[0].pboard - self.bonds[1].pboard).normalized()
-            f = dir_ * (self.min_dist_pboard-self.dist_pboard()) * 0.5 * damp
-            self.bonds[0].add_force(f)
-            self.bonds[1].add_force(-f)
+        [bond, otherbond] = self._bonds_perm(0)
+        dist = self._dist_pboard()
+        dist_violation = self._min_dist_pboard - abs(dist)
+        if dist_violation > 0:
+            f = damp * dist_violation * dist.normalized()
+            bond.add_force(0.5*f)
+            otherbond.add_force(-0.5*f)
 
     def repulsion_pboard_wire(self, damp=1.0):
-        for [bond, otherbond] in [self.bonds, list(reversed(self.bonds))]:
-            #bond1 = bonds[0]
-            #bond2 = bonds[1]
-            #a = bonds[1].pchip-bonds[0].pchip
-            #b = bonds[0].pboard-bonds[0].pchip
-            #q = bond1.pchip + b.normed()*a.dot(b)/abs(b)
-            #print q
-            #F = q - bond2.pchip
-            (dist, t) = dist_point_line(otherbond.pboard, [bond.pchip, bond.pboard])
-            if t > 0 and t < 1 and abs(dist) < 150:
-                #f = abs(q-bond1.pchip)/bond1.length*F.set_length(90-abs(F))
-                f = damp*(150-abs(dist))*dist.normalized()
+        for i in range(2):
+            [bond, otherbond] = self._bonds_perm(i)
+            (dist, t) = self._dist_pboard_wire(i)
+            dist_violation = self._min_dist_pboard_wire - abs(dist)
+            if t > 0 and t < 1 and dist_violation > 0:
+                f = damp * dist_violation * dist.normalized()
                 bond.add_force(0.5*f)
                 otherbond.add_force(-0.5*f)
+
+    def repulsion_pchip_wire(self, damp=1.0):
+        for i in range(2):
+            [bond, otherbond] = self._bonds_perm(i)
+            (dist, t) = self._dist_pchip_wire(i)
+            dist_violation = self._min_dist_pchip_wire - abs(dist)
+            if t > 0 and t < 1 and dist_violation > 0:
+                f = damp * dist_violation * dist.normalized()
+                bond.add_force(f)
 
 
 #==============================================================================
@@ -220,15 +245,6 @@ def neighbor_pairs(bonds, rings, center=None):
             pairs.append(BondPair([bond, neighbor]))
     # len(pairs) should now be len(bonds) * len(rings)
     return pairs
-
-
-#==============================================================================
-# functions for doing something with bond pairs
-#==============================================================================
-def mark_for_update(pairs):
-    for pair in pairs:
-        if any(b.forces for b in pair.bonds):
-            pair._needs_update = True
 
 
 #==============================================================================
