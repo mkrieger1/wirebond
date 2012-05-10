@@ -17,11 +17,13 @@ pairs = neighbor_pairs(bonds, rings)
 for pair in pairs:
     rings = [bond.ring for bond in pair.bonds]
     if not rings[0] == rings[1]:
-        pair.min_dist_pboard = 300
+        pair.set_min_dist_pboard(300)
     elif rings[0] == 3: # == rings[1]
-        pair.min_dist_pboard = 300
+        pair.set_min_dist_pboard(300)
     else:
-        pair.min_dist_pboard = 90
+        pair.set_min_dist_pboard(90)
+    pair.set_min_dist_pboard_wire(150)
+    pair.set_min_dist_pchip_wire(90)
 
 #for bond in bonds:
 #    f = bond.p1 - Point2D(-1000, 2000)
@@ -30,23 +32,26 @@ for pair in pairs:
 # start iteration
 start = time.time()
 
-NITER = 1000
+NITER = 100
+DAMP = 0.3
 for i in range(NITER):
     # repulsion of pads on pcb
     for pair in pairs:
-        pair.repulsion_pboard(damp=0.3)
-        pair.repulsion_pboard_wire(damp=0.3)
+        pair.repulsion_pboard(damp=DAMP)
+        pair.repulsion_pboard_wire(damp=DAMP)
+        pair.repulsion_pchip_wire(damp=DAMP)
 
-    mark_for_update(pairs)
+    #mark_for_update(pairs)
 
-    print '%.1f' % max(pair.min_dist_pboard-pair.dist_pboard() for pair in pairs)
+    print '%.1f' % max(pair._min_dist_pboard-abs(pair._dist_pboard()) for pair in pairs)
+
+    if not i % 10:
+        with open('animation/bondspstest_%04i.ps' % i, 'w') as f:
+            bonds_output_postscript(bonds, f, withforces=True,
+                                    scaleforce=1.0/DAMP)
 
     for bond in bonds:
         bond.apply_force()
-
-    if not i % 100:
-        with open('animation/bondspstest_%04i.ps' % i, 'w') as f:
-            bonds_output_postscript(bonds, f)
         
 stop = time.time()
 print 'took %.2f seconds.' % (stop-start)
