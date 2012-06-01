@@ -1,0 +1,127 @@
+AmpLow         58, 186
+BiasNBotIn     81
+BiasNBotOut    91
+BiasNRightIn   135
+BiasNRightOut1 133
+BiasNRightOut2 102
+BiasNTopIn     163
+BiasNTopOut    153
+BiasP          190
+DNC            65, 68, 69, 110, 120, 121, 175, 176, 179
+DecAdcAmpLow1  53
+DecAdcAmpLow2  52
+DecAdcGnda1    55
+DecAdcGnda2    54
+DecAdcVdda1    51
+DecAdcVdda2    50
+DecAdcVdda3    49
+Monitor        189
+RefIn          59, 185
+SCL            117
+SDA            118
+ampIn0         4
+ampIn1         5
+ampIn10        17
+ampIn11        18
+ampIn12        19
+ampIn13        20
+ampIn14        21
+ampIn15        22
+ampIn16        26
+ampIn17        27
+ampIn18        28
+ampIn19        29
+ampIn2         6
+ampIn20        30
+ampIn21        31
+ampIn22        32
+ampIn23        33
+ampIn24        37
+ampIn25        38
+ampIn26        39
+ampIn27        40
+ampIn28        41
+ampIn29        42
+ampIn3         7
+ampIn30        43
+ampIn31        44
+ampIn4         8
+ampIn5         9
+ampIn6         10
+ampIn7         11
+ampIn8         15
+ampIn9         16
+clk10N         145
+clk10P         146
+clk1N          141
+clk1P          142
+clk2N          143
+clk2P          144
+dataInN        131
+dataInP        132
+dataOutAN      100
+dataOutAP      101
+dataOutBN      98
+dataOutBP      99
+enableReadout  126
+gnda           57, 187
+gndb           12, 23, 34, 62, 72, 90, 105, 122, 138, 154, 172, 182
+gndc           3, 14, 25, 36, 48
+gndd1          61, 183
+gndd2          67, 76, 85, 95, 104, 116, 128, 140, 149, 159, 168, 177
+gndo           71, 89, 106, 123, 136, 155, 173
+gndp1          1, 46
+gndp2          180
+gndp3          64
+linkActive     119
+miscInBotN0    79
+miscInBotN1    77
+miscInBotN2    73
+miscInBotP0    80
+miscInBotP1    78
+miscInBotP2    74
+miscInTopN0    162
+miscInTopN1    165
+miscInTopN2    167
+miscInTopN3    171
+miscInTopP0    161
+miscInTopP1    164
+miscInTopP2    166
+miscInTopP3    170
+miscOutBotN0   96
+miscOutBotN1   92
+miscOutBotN2   86
+miscOutBotN3   82
+miscOutBotP0   97
+miscOutBotP1   93
+miscOutBotP2   87
+miscOutBotP3   83
+miscOutTopN0   148
+miscOutTopN1   152
+miscOutTopN2   158
+miscOutTopP0   147
+miscOutTopP1   151
+miscOutTopP2   157
+nCasc          193
+nSourceBias    191
+pCasc          194
+pSourceBias    192
+readoutEnabled 125
+resN           134
+resN1          114
+resN10         112
+resN2          113
+serdesReady    111
+triggerOutN    129
+triggerOutP    130
+userpin1       109
+userpin2       108
+vdda           56, 188
+vddc           2, 13, 24, 35, 47
+vddd1          60, 184
+vddd2          66, 75, 84, 94, 103, 115, 127, 139, 150, 160, 169, 178
+vddo           70, 88, 107, 124, 137, 156, 174
+vddp1          0, 45
+vddp2          181
+vddp3          63
+xFB            195
