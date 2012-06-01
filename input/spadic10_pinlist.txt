@@ -9,36 +9,67 @@
 
 # Pins & Net & Dec vs. & Type & Comment
 
-0,45                      & vddp1         & -             & protection   & to vddc
-1,46                      & gndp1         & -             & protection   & to gndc
-2, 13, 24, 35, 47         & vddc          & gndc          & power        & CSA 1.8V
-3, 14, 25, 36, 48         & gndc          & vddc          & power        & CSA 0.0V
-4-11, 15-22, 26-33, 37-44 & ampIn[0:31]   & -             & input        & CSA, to connector
-12, 23, 34, 62, 182       & gndb          & -             & bulk         & also in digital part
-49                        & DecAdcVdda3   & vdda          & bias         & ADC + analog CSA trigger
-50                        & DecAdcVdda2   & vdda          & bias         & ADC, internally switchable
-51                        & DecAdcVdda1   & vdda          & bias         & ADC, internally switchable
-52                        & DecAdcAmpLow2 & AmpLow        & bias         & ADC, internally switchable
-53                        & DecAdcAmpLow1 & AmpLow        & bias         & ADC, internally switchable
-54                        & DecAdcGnda2   & gnda          & bias         & ADC, internally switchable
-55                        & DecAdcGnda1   & gnda          & bias         & ADC, internally switchable
-56, 188                   & vdda          & gnda          & power        & ADC analog 1.8V
-57, 187                   & gnda          & vdda          & power        & ADC analog 0.0V
-58, 186                   & AmpLow        & vdda          & power        & ADC analog 0.3V
-59, 185                   & RefIn         & ?             & power        & ADC analog 0.96V
-60, 184                   & vddd1         & gndd1         & power        & ADC digital 1.8V
-61, 183                   & gndd1         & vddd1         & power        & ADC digital 0.0V
-63                        & vddp3         &               & protection   & lower ADC pins, to vdda
-64                        & gndp3         &               & protection   & lower ADC pins, to gnda
-180                       & gndp2         &               & protection   & upper ADC pins, to gnda
-181                       & vddp2         &               & protection   & upper ADC pins, to vdda
-189                       & Monitor       & -             & monitor      & ADC + CSA, switchable, mmcx
-190                       & BiasP         & vddc          & bias         & DAC reference
-191                       & nSourceBias   & gndc          & bias         & CSA
-192                       & pSourceBias   & vddc          & bias         & CSA
-193                       & nCasc         & gndc          & bias         & CSA
-194                       & pCasc         & vddc          & bias         & CSA
-195                       & xFB           & p:gndc,n:vddc & bias         & CSA
+0,45                & vddp1         & -             & protection & to vddc
+1,46                & gndp1         & -             & protection & to gndc
+2, 13, 24, 35, 47   & vddc          & gndc          & power      & CSA 1.8V
+3, 14, 25, 36, 48   & gndc          & vddc          & power      & CSA 0.0V
+4                   & ampIn0        & -             & input      & CSA, to connector
+5                   & ampIn1        & -             & input      & CSA, to connector
+6                   & ampIn2        & -             & input      & CSA, to connector
+7                   & ampIn3        & -             & input      & CSA, to connector
+8                   & ampIn4        & -             & input      & CSA, to connector
+9                   & ampIn5        & -             & input      & CSA, to connector
+10                  & ampIn6        & -             & input      & CSA, to connector
+11                  & ampIn7        & -             & input      & CSA, to connector
+15                  & ampIn8        & -             & input      & CSA, to connector
+16                  & ampIn9        & -             & input      & CSA, to connector
+17                  & ampIn10       & -             & input      & CSA, to connector
+18                  & ampIn11       & -             & input      & CSA, to connector
+19                  & ampIn12       & -             & input      & CSA, to connector
+20                  & ampIn13       & -             & input      & CSA, to connector
+21                  & ampIn14       & -             & input      & CSA, to connector
+22                  & ampIn15       & -             & input      & CSA, to connector
+26                  & ampIn16       & -             & input      & CSA, to connector
+27                  & ampIn17       & -             & input      & CSA, to connector
+28                  & ampIn18       & -             & input      & CSA, to connector
+29                  & ampIn19       & -             & input      & CSA, to connector
+30                  & ampIn20       & -             & input      & CSA, to connector
+31                  & ampIn21       & -             & input      & CSA, to connector
+32                  & ampIn22       & -             & input      & CSA, to connector
+33                  & ampIn23       & -             & input      & CSA, to connector
+37                  & ampIn24       & -             & input      & CSA, to connector
+38                  & ampIn25       & -             & input      & CSA, to connector
+39                  & ampIn26       & -             & input      & CSA, to connector
+40                  & ampIn27       & -             & input      & CSA, to connector
+41                  & ampIn28       & -             & input      & CSA, to connector
+42                  & ampIn29       & -             & input      & CSA, to connector
+43                  & ampIn30       & -             & input      & CSA, to connector
+44                  & ampIn31       & -             & input      & CSA, to connector
+12, 23, 34, 62, 182 & gndb          & -             & bulk       & also in digital part
+49                  & DecAdcVdda3   & vdda          & bias       & ADC + analog CSA trigger
+50                  & DecAdcVdda2   & vdda          & bias       & ADC, internally switchable
+51                  & DecAdcVdda1   & vdda          & bias       & ADC, internally switchable
+52                  & DecAdcAmpLow2 & AmpLow        & bias       & ADC, internally switchable
+53                  & DecAdcAmpLow1 & AmpLow        & bias       & ADC, internally switchable
+54                  & DecAdcGnda2   & gnda          & bias       & ADC, internally switchable
+55                  & DecAdcGnda1   & gnda          & bias       & ADC, internally switchable
+56, 188             & vdda          & gnda          & power      & ADC analog 1.8V
+57, 187             & gnda          & vdda          & power      & ADC analog 0.0V
+58, 186             & AmpLow        & vdda          & power      & ADC analog 0.3V
+59, 185             & RefIn         & gnda          & power      & ADC analog 0.96V
+60, 184             & vddd1         & gndd1         & power      & ADC digital 1.8V
+61, 183             & gndd1         & vddd1         & power      & ADC digital 0.0V
+63                  & vddp3         & -             & protection & lower ADC pins, to vdda
+64                  & gndp3         & -             & protection & lower ADC pins, to gnda
+180                 & gndp2         & -             & protection & upper ADC pins, to gnda
+181                 & vddp2         & -             & protection & upper ADC pins, to vdda
+189                 & Monitor       & -             & monitor    & ADC + CSA, switchable, mmcx
+190                 & BiasP         & vddc          & bias       & DAC reference
+191                 & nSourceBias   & gndc          & bias       & CSA
+192                 & pSourceBias   & vddc          & bias       & CSA
+193                 & nCasc         & gndc          & bias       & CSA
+194                 & pCasc         & vddc          & bias       & CSA
+195                 & xFB           & p:gndc,n:vddc & bias       & CSA
 
 # Digital Part
 # ------------
@@ -47,17 +78,27 @@
 
 # Pins & Net & Dec vs. & Type & Comment
 
-66, 75, 84, 94, 103, 115, 127, 139, 150, 160, 169, 178 & vddd2            & gndd2         & power        & \UV{1.8}
-67, 76, 85, 95, 104, 116, 128, 140, 149, 159, 168, 177 & gndd2            & vddd2         & power        & \UV{0.0}
-68, 69, 110, 120, 121, 175, 176          &                  & -             & unused       & DNC
+66, 75, 84, 94, 103, 115, 127, 139, 150, 160, 169, 178 & vddd2 & gndd2      & power        & 1.8V
+67, 76, 85, 95, 104, 116, 128, 140, 149, 159, 168, 177 & gndd2 & vddd2      & power        & 0.0V
+65, 68, 69, 110, 120, 121, 175, 176, 179 & DNC              & -             & unused       & DNC
 70, 88, 107, 124, 137, 156, 174          & vddo             & -             & protection   & digital pads, to vddd2
 71, 89, 106, 123, 136, 155, 173          & gndo             & -             & protection   & digital pads. to gndd2
 72, 90, 105, 122, 138, 154, 172          & gndb             & -             & bulk         & also in analog part
-73, 77, 79                               & miscInBotN[2:0]  & -             & lvds input   & to connector
-74, 78, 80                               & miscInBotP[2:0]  & -             & lvds input   & to connector
+73                                       & miscInBotN2      & -             & lvds input   & to connector
+77                                       & miscInBotN1      & -             & lvds input   & to connector
+79                                       & miscInBotN0      & -             & lvds input   & to connector
+74                                       & miscInBotP2      & -             & lvds input   & to connector
+78                                       & miscInBotP1      & -             & lvds input   & to connector
+80                                       & miscInBotP0      & -             & lvds input   & to connector
 81                                       & BiasNBotIn       & gndd2         & lvds bias    &
-82, 86, 92, 96                           & miscOutBotN[3:0] & -             & lvds output  & to connector
-83, 87, 93, 97                           & miscOutBotP[3:0] & -             & lvds output  & to connector
+82                                       & miscOutBotN3     & -             & lvds output  & to connector
+86                                       & miscOutBotN2     & -             & lvds output  & to connector
+92                                       & miscOutBotN1     & -             & lvds output  & to connector
+96                                       & miscOutBotN0     & -             & lvds output  & to connector
+83                                       & miscOutBotP3     & -             & lvds output  & to connector
+87                                       & miscOutBotP2     & -             & lvds output  & to connector
+93                                       & miscOutBotP1     & -             & lvds output  & to connector
+97                                       & miscOutBotP0     & -             & lvds output  & to connector
 91                                       & BiasNBotOut      & gndd2         & lvds bias    &
 98                                       & dataOutBN        & -             & lvds output  & to connector, fast link
 99                                       & dataOutBP        & -             & lvds output  & to connector, fast link
@@ -88,9 +129,19 @@
 144                                      & clk2P            & -             & lvds output  & to mmcx, termination
 145                                      & clk10N           & -             & lvds output  & to mmcx, termination
 146                                      & clk10P           & -             & lvds output  & to mmcx, termination
-157, 151, 147                            & miscOutTopP[2:0] & -             & lvds output  & to connector
-158, 152, 148                            & miscOutTopN[2:0] & -             & lvds output  & to connector
+157                                      & miscOutTopP2     & -             & lvds output  & to connector
+151                                      & miscOutTopP1     & -             & lvds output  & to connector
+147                                      & miscOutTopP0     & -             & lvds output  & to connector
+158                                      & miscOutTopN2     & -             & lvds output  & to connector
+152                                      & miscOutTopN1     & -             & lvds output  & to connector
+148                                      & miscOutTopN0     & -             & lvds output  & to connector
 153                                      & BiasNTopOut      & gndd2         & lvds bias    &
-170, 166, 164, 161                       & miscInTopP[3:0]  & -             & lvds input   & to connector
-171, 167, 165, 162                       & miscInTopN[3:0]  & -             & lvds input   & to connector
+170                                      & miscInTopP3      & -             & lvds input   & to connector
+166                                      & miscInTopP2      & -             & lvds input   & to connector
+164                                      & miscInTopP1      & -             & lvds input   & to connector
+161                                      & miscInTopP0      & -             & lvds input   & to connector
+171                                      & miscInTopN3      & -             & lvds input   & to connector
+167                                      & miscInTopN2      & -             & lvds input   & to connector
+165                                      & miscInTopN1      & -             & lvds input   & to connector
+162                                      & miscInTopN0      & -             & lvds input   & to connector
 163                                      & BiasNTopIn       & gndd2         & lvds bias    &
