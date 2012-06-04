@@ -1,196 +1,197 @@
-  0 vddp1
-  1 gndp1
-  2 vddc
-  3 gndc
-  4 ampIn0
-  5 ampIn1
-  6 ampIn2
-  7 ampIn3
-  8 ampIn4
-  9 ampIn5
- 10 ampIn6
- 11 ampIn7
- 12 gndb
- 13 vddc
- 14 gndc
- 15 ampIn8
- 16 ampIn9
- 17 ampIn10
- 18 ampIn11
- 19 ampIn12
- 20 ampIn13
- 21 ampIn14
- 22 ampIn15
- 23 gndb
- 24 vddc
- 25 gndc
- 26 ampIn16
- 27 ampIn17
- 28 ampIn18
- 29 ampIn19
- 30 ampIn20
- 31 ampIn21
- 32 ampIn22
- 33 ampIn23
- 34 gndb
- 35 vddc
- 36 gndc
- 37 ampIn24
- 38 ampIn25
- 39 ampIn26
- 40 ampIn27
- 41 ampIn28
- 42 ampIn29
- 43 ampIn30
- 44 ampIn31
- 45 vddp1
- 46 gndp1
- 47 vddc
- 48 gndc
- 49 DecAdcVdda3
- 50 DecAdcVdda2
- 51 DecAdcVdda1
- 52 DecAdcAmpLow2
- 53 DecAdcAmpLow1
- 54 DecAdcGnda2
- 55 DecAdcGnda1
- 56 vdda
- 57 gnda
- 58 AmpLow
- 59 RefIn
- 60 vddd1
- 61 gndd1
- 62 gndb
- 63 vddp3
- 64 gndp3
+# number name     ring
+  0 vddp1           1
+  1 gndp1         0
+  2 vddc            1
+  3 gndc          0
+  4 ampIn0                5
+  5 ampIn1              4
+  6 ampIn2                5
+  7 ampIn3              4
+  8 ampIn4                5
+  9 ampIn5              4
+ 10 ampIn6                5
+ 11 ampIn7              4
+ 12 gndb          0
+ 13 vddc            1
+ 14 gndc          0
+ 15 ampIn8                5
+ 16 ampIn9              4
+ 17 ampIn10               5
+ 18 ampIn11             4
+ 19 ampIn12               5
+ 20 ampIn13             4
+ 21 ampIn14               5
+ 22 ampIn15             4
+ 23 gndb          0
+ 24 vddc            1
+ 25 gndc          0
+ 26 ampIn16               5
+ 27 ampIn17             4
+ 28 ampIn18               5
+ 29 ampIn19             4
+ 30 ampIn20               5
+ 31 ampIn21             4
+ 32 ampIn22               5
+ 33 ampIn23             4
+ 34 gndb          0
+ 35 vddc            1
+ 36 gndc          0
+ 37 ampIn24               5
+ 38 ampIn25             4
+ 39 ampIn26               5
+ 40 ampIn27             4
+ 41 ampIn28               5
+ 42 ampIn29             4
+ 43 ampIn30               5
+ 44 ampIn31             4
+ 45 vddp1           1
+ 46 gndp1         0
+ 47 vddc            1
+ 48 gndc          0
+ 49 DecAdcVdda3           5
+ 50 DecAdcVdda2         4
+ 51 DecAdcVdda1           5
+ 52 DecAdcAmpLow2       4
+ 53 DecAdcAmpLow1         5
+ 54 DecAdcGnda2         4
+ 55 DecAdcGnda1           5
+ 56 vdda            1
+ 57 gnda          0
+ 58 AmpLow              4
+ 59 RefIn                 5
+ 60 vddd1               4
+ 61 gndd1                 5
+ 62 gndb          0
+ 63 vddp3           1
+ 64 gndp3         0
  65 DNC
- 66 vddd2
- 67 gndd2
+ 66 vddd2             3
+ 67 gndd2           2
  68 DNC
  69 DNC
- 70 vddo
- 71 gndo
- 72 gndb
- 73 miscInBotN2
- 74 miscInBotP2
- 75 vddd2
- 76 gndd2
- 77 miscInBotN1
- 78 miscInBotP1
- 79 miscInBotN0
- 80 miscInBotP0
- 81 BiasNBotIn
- 82 miscOutBotN3
- 83 miscOutBotP3
- 84 vddd2
- 85 gndd2
- 86 miscOutBotN2
- 87 miscOutBotP2
- 88 vddo
- 89 gndo
- 90 gndb
- 91 BiasNBotOut
- 92 miscOutBotN1
- 93 miscOutBotP1
- 94 vddd2
- 95 gndd2
- 96 miscOutBotN0
- 97 miscOutBotP0
- 98 dataOutBN
- 99 dataOutBP
-100 dataOutAN
-101 dataOutAP
-102 BiasNRightOut2
-103 vddd2
-104 gndd2
-105 gndb
-106 gndo
-107 vddo
-108 userpin2
-109 userpin1
+ 70 vddo              3
+ 71 gndo            2
+ 72 gndb          0
+ 73 miscInBotN2         4
+ 74 miscInBotP2           5
+ 75 vddd2             3
+ 76 gndd2           2
+ 77 miscInBotN1           5
+ 78 miscInBotP1         4
+ 79 miscInBotN0           5
+ 80 miscInBotP0         4
+ 81 BiasNBotIn            5
+ 82 miscOutBotN3        4
+ 83 miscOutBotP3          5
+ 84 vddd2             3
+ 85 gndd2           2
+ 86 miscOutBotN2        4
+ 87 miscOutBotP2          5
+ 88 vddo              3
+ 89 gndo            2
+ 90 gndb          0
+ 91 BiasNBotOut         4
+ 92 miscOutBotN1          5
+ 93 miscOutBotP1        4
+ 94 vddd2             3
+ 95 gndd2           2
+ 96 miscOutBotN0          5
+ 97 miscOutBotP0        4
+ 98 dataOutBN             5
+ 99 dataOutBP           4
+100 dataOutAN             5
+101 dataOutAP           4
+102 BiasNRightOut2        5
+103 vddd2             3
+104 gndd2           2
+105 gndb          0
+106 gndo            2
+107 vddo              3
+108 userpin2            4
+109 userpin1              5
 110 DNC
-111 serdesReady
-112 resN10
-113 resN2
-114 resN1
-115 vddd2
-116 gndd2
-117 SCL
-118 SDA
-119 linkActive
+111 serdesReady         4
+112 resN10                5
+113 resN2               4
+114 resN1                 5
+115 vddd2             3
+116 gndd2           2
+117 SCL                 4
+118 SDA                   5
+119 linkActive          4
 120 DNC
 121 DNC
-122 gndb
-123 gndo
-124 vddo
-125 readoutEnabled
-126 enableReadout
-127 vddd2
-128 gndd2
-129 triggerOutN
-130 triggerOutP
-131 dataInN
-132 dataInP
-133 BiasNRightOut1
-134 resN
-135 BiasNRightIn
-136 gndo
-137 vddo
-138 gndb
-139 vddd2
-140 gndd2
-141 clk1N
-142 clk1P
-143 clk2N
-144 clk2P
-145 clk10N
-146 clk10P
-147 miscOutTopP0
-148 miscOutTopN0
-149 gndd2
-150 vddd2
-151 miscOutTopP1
-152 miscOutTopN1
-153 BiasNTopOut
-154 gndb
-155 gndo
-156 vddo
-157 miscOutTopP2
-158 miscOutTopN2
-159 gndd2
-160 vddd2
-161 miscInTopP0
-162 miscInTopN0
-163 BiasNTopIn
-164 miscInTopP1
-165 miscInTopN1
-166 miscInTopP2
-167 miscInTopN2
-168 gndd2
-169 vddd2
-170 miscInTopP3
-171 miscInTopN3
-172 gndb
-173 gndo
-174 vddo
+122 gndb          0
+123 gndo            2
+124 vddo              3
+125 readoutEnabled        5
+126 enableReadout       4
+127 vddd2             3
+128 gndd2           2
+129 triggerOutN           5
+130 triggerOutP         4
+131 dataInN               5
+132 dataInP             4
+133 BiasNRightOut1        5
+134 resN                4
+135 BiasNRightIn          5
+136 gndo            2
+137 vddo              3
+138 gndb          0
+139 vddd2             3
+140 gndd2           2
+141 clk1N               4
+142 clk1P                 5
+143 clk2N               4
+144 clk2P                 5
+145 clk10N              4
+146 clk10P                5
+147 miscOutTopP0        4
+148 miscOutTopN0          5
+149 gndd2           2
+150 vddd2             3
+151 miscOutTopP1        4
+152 miscOutTopN1          5
+153 BiasNTopOut         4
+154 gndb          0
+155 gndo            2
+156 vddo              3
+157 miscOutTopP2          5
+158 miscOutTopN2        4
+159 gndd2           2
+160 vddd2             3
+161 miscInTopP0           5
+162 miscInTopN0         4
+163 BiasNTopIn            5
+164 miscInTopP1         4
+165 miscInTopN1           5
+166 miscInTopP2         4
+167 miscInTopN2           5
+168 gndd2           2
+169 vddd2             3
+170 miscInTopP3         4
+171 miscInTopN3           5
+172 gndb          0
+173 gndo            2
+174 vddo              3
 175 DNC
 176 DNC
-177 gndd2
-178 vddd2
+177 gndd2           2
+178 vddd2             3
 179 DNC
-180 gndp2
-181 vddp2
-182 gndb
-183 gndd1
-184 vddd1
-185 RefIn
-186 AmpLow
-187 gnda
-188 vdda
-189 Monitor
-190 BiasP
-191 nSourceBias
-192 pSourceBias
-193 nCasc
-194 pCasc
-195 xFB
+180 gndp2         0
+181 vddp2           1
+182 gndb          0
+183 gndd1               4
+184 vddd1                 5
+185 RefIn               4
+186 AmpLow                5
+187 gnda          0
+188 vdda            1
+189 Monitor             4
+190 BiasP                 5
+191 nSourceBias         4
+192 pSourceBias           5
+193 nCasc               4
+194 pCasc                 5
+195 xFB                 4
