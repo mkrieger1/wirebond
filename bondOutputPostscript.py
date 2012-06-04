@@ -87,9 +87,9 @@ def postscript_header():
 # Draw a bond
 #------------------------------------------------------------------------------
 def postscript_bond(bond):
-    return "%7.1f %7.1f %7.1f %7.1f %6.1f Bond" % (bond.pchip.x, bond.pchip.y,
-                                                   bond.pboard.x, bond.pboard.y,
-                                                   bond.angle/math.pi*180)
+    return "%7.1f %7.1f %7.1f %7.1f %6.1f Bond" % (
+      bond.pchip.x, bond.pchip.y, bond.pboard.x, bond.pboard.y,
+      bond.angle/math.pi*180 if True else 0.0) #bond.rectangle is None else 0.0)
 
 
 #------------------------------------------------------------------------------

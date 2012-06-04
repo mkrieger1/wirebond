@@ -9,6 +9,7 @@ def valid_lines(filename):
                 yield line
 
 def read_bond_definition(filename):
+    rings = {}
     pos = Point2D(0, 0)
     incr = Point2D(0, 0)
     bonds = []
@@ -17,19 +18,37 @@ def read_bond_definition(filename):
 
     # process input file
     for line in valid_lines(filename):
+        # get chip bounding box
+        if line.startswith('CHIP'):
+            chip = map(int, line.split()[1:])
+
         # get rings
-        if line.startswith('RINGS'):
-            rings = map(int, line.split()[1:])
+        if line.startswith('RING'):
+            item = line.split()
+            ring = int(item[1])
+            radius = int(item[2])
+            if 'RECT' in item:
+                rectangle = [chip[0]-radius,
+                             chip[1]-radius,
+                             chip[2]+radius,
+                             chip[3]+radius]
+            else:
+                rectangle = None
+            rings[ring] = (radius, rectangle)
+
+        # get 'do not bond' nets
+        if line.startswith('NO_BOND'):
+            no_bond = line.split()[1:]
 
         # get min./max. angle
-        elif line.startswith('ANGLES'):
-            angles_int = map(int, line.split()[1:])
-            angles_fixed = not(abs(angles_int[1]-angles_int[0]) == 360)
-            angles = [x*math.pi/180 for x in angles_int]
+        #elif line.startswith('ANGLES'):
+        #    angles_int = map(int, line.split()[1:])
+        #    angles_fixed = not(abs(angles_int[1]-angles_int[0]) == 360)
+        #    angles = [x*math.pi/180 for x in angles_int]
 
         # get minimum pad distance
-        elif line.startswith('D_MIN'):
-            d_min = int(line.split()[1])
+        #elif line.startswith('D_MIN'):
+        #    d_min = int(line.split()[1])
 
         # move position
         elif line.startswith('MOVE'):
@@ -55,21 +74,34 @@ def read_bond_definition(filename):
         # read pads if in read_pad mode and
         # create a bond for each pad with ring > -1
         elif read_pads:
-            pads = map(int, line.split())
-            for pad in pads:
-                ring = pad-1
-                if ring > -1: # ring == -1 is an empty pad
-                    pchip = Point2D(pos.x, pos.y)
-                    length = rings[ring]
-                    bonds.append(Bond(padnumber, pchip, length, 0, ring))
-                pos += incr
-                padnumber += 1
+            item = line.split()
+            padnumber = int(item[0])
+            net = item[1]
+            if net not in no_bond:
+                ring = int(item[2])
+                (length, rectangle) = rings[ring]
+                pchip = Point2D(pos.x, pos.y)
+                bond = Bond(padnumber, net, pchip, length, 0, ring, rectangle)
+                bonds.append(bond)
+            pos += incr
+
+            #pads = map(int, line.split())
+            #for pad in pads:
+            #    ring = pad-1
+            #    if ring > -1: # ring == -1 is an empty pad
+            #        pchip = Point2D(pos.x, pos.y)
+            #        length = rings[ring]
+            #        bonds.append(Bond(padnumber, pchip, length, 0, ring))
+
 
     # distribute bonds evenly between min. and max. angle
-    step_phi = (angles[1]-angles[0]) / (len(bonds)-1)
-    phi = angles[0]
+    step_phi = 2*math.pi / (len(bonds)-1)
+    phi = 3*math.pi/4
+    #step_phi = (angles[1]-angles[0]) / (len(bonds)-1)
+    #phi = angles[0]
     for b in bonds:
         b.set_angle(phi)
+        b.apply_force() # in case rectangle is set, this sets the correct length
         phi += step_phi
     #if angles_fixed:
     #    bonds[ 0].angle_fixed = True

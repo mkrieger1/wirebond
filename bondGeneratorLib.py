@@ -84,20 +84,24 @@ class Point2D():
 # Bond: wire between two endpoints (pchip --> pboard), forces move pboard
 #==============================================================================
 class Bond():
-    def __init__(self, padnumber, pchip, length, angle, ring=0):
+    def __init__(self, padnumber, net, pchip, length, angle, ring=0, rectangle=None):
         self.padnumber = padnumber
+        self.net = net
         self.pchip = pchip
         self.length = float(length)
         self.angle = float(angle)
         self.calc_pboard()
         self.ring = int(ring)
         self.forces = []
+        self.rectangle = rectangle # would be [x0, y0, x1, y1],
+                                   # where (x0, y0) is the bottom left
+                                   # and (x1, y1) is the top right corner
 
     def __str__(self):
         return ("Bond #%i on ring %i, %s --> %s, "
-                "angle = %5.1f°, length = %6.1f µm") % (self.padnumber,
+                "angle = %5.1f°, length = %6.1f µm, net = %s") % (self.padnumber,
                 self.ring, str(self.pchip), str(self.pboard),
-                self.angle*180/math.pi, self.length)
+                self.angle*180/math.pi, self.length, self.net)
 
     def calc_pboard(self):
         wire = self.length*Point2D(1, 0).rotated(self.angle)
@@ -142,6 +146,15 @@ class Bond():
         self.forces = []
         # add force to end point and rotate to that angle
         self.set_angle((self.pboard - self.pchip + force).polar_angle())
+        # if PCB-side pad sits on rectangle, adjust length
+        if self.rectangle is not None:
+            [x0, y0, x1, y1] = self.rectangle
+            wire = [self.pchip, self.pboard]
+            t = min(t for t in [intersect_line_x(wire, x0)[1],
+                                intersect_line_y(wire, y0)[1],
+                                intersect_line_x(wire, x1)[1],
+                                intersect_line_y(wire, y1)[1]] if t > 0)
+            self.set_length(t*self.length)
 
 
 #==============================================================================
@@ -255,6 +268,29 @@ def dist_point_line(point, line):
     b = (line[1]-line[0]).normalized()
     t = a.dot(b)
     return (line[0] + b*t - point, t/abs(line[1]-line[0]))
+
+def _intersect_line_xy(line, xy, mode):
+    p = line[0]
+    a = line[1]-line[0]
+    [P, A] = {
+      'x': [p.x, a.x],
+      'y': [p.y, a.y]
+      }[mode]
+    if A == 0: # line parallel to x or y
+        if P == xy: # number of solutions: infinite -> choose one
+            t = 1.0
+        else:       # number of solutions: 0
+            t = None
+    else:
+        t = (xy-P)/A
+    q = p + t*a if t is not None else None
+    return (q, t)
+
+def intersect_line_x(line, x):
+    return _intersect_line_xy(line, x, 'x')
+def intersect_line_y(line, y):
+    return _intersect_line_xy(line, y, 'y')
+
 
 def bonds_intersect(bond1, bond2):
     parallel = not ((bond2.phi - bond1.phi) % math.pi)
