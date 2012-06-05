@@ -154,6 +154,7 @@ class Bond():
         self.forces = []
         # add force to end point and rotate to that angle
         self.set_angle((self.pboard - self.pchip + force).polar_angle())
+        self.pad_rotation = self.angle
         # if board-side pad sits on a rectangle around the chip instead of a
         # circle around the chip-side pad, adjust the length of the bond
         if self.rectangular:
@@ -179,8 +180,8 @@ class Bond():
         self.pad_rotation = int((self.angle+math.pi/4)*2/math.pi)*math.pi/2
 
         if rounded_corners:
-            if (sgnx * (self.pchip.x - corner.x) > 0 and
-                sgny * (self.pchip.y - corner.y) > 0):
+            if (sgnx * (self.pboard.x - corner.x) > 0 and
+                sgny * (self.pboard.y - corner.y) > 0):
              wire = [self.pchip-corner, self.pboard-corner]
              (q, t) = intersect_line_circle(wire, radius, quadrant)
              self.set_length(t*self.length)
@@ -388,8 +389,7 @@ def intersect_line_circle(line, radius, quadrant):
                             (-D*dx + abs(dy) * math.sqrt(DD)) / l**2),
                     Point2D(( D*dy - sgn*dx  * math.sqrt(DD)) / l**2,
                             (-D*dx - abs(dy) * math.sqrt(DD)) / l**2)]
-          if True]#int(q.polar_angle()*2/math.pi) == quadrant]
-        print '\n'.join(str(q) for q in result)
+          if int(q.polar_angle()*2/math.pi) == quadrant]
 
     if result:
         q = result[0]
