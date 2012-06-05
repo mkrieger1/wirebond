@@ -16,19 +16,20 @@ pairs = neighbor_pairs(bonds, rings)
 # set minimum distance for bond position on pcb for each pair
 for pair in pairs:
     rings = [bond.ring for bond in pair.bonds]
-    # rings 4, 5, 6, 7 are individual signals --> spacing
+    # rings 4, 5, 6, 7 are individual signals --> extra spacing
+    # rings 0, 1, 2, 3 are power/ground nets --> no extra spacing
     if any(ring in [6, 7] for ring in rings):
         pair.set_min_dist_pboard(600)
     elif any(ring in [4, 5] for ring in rings):
-        pair.set_min_dist_pboard(450)
-    # rings 0, 1, 2, 3 are power/ground nets --> no spacing
+        pair.set_min_dist_pboard(400)
     # bonds on different rings
     elif not rings[0] == rings[1]:
-        pair.set_min_dist_pboard(400)
+        pair.set_min_dist_pboard(600)
     # bonds on same ring
     else:
         pair.set_min_dist_pboard(90)
-    pair.set_min_dist_pboard_wire(250)
+
+    pair.set_min_dist_pboard_wire(300)
     pair.set_min_dist_pchip_wire(90)
 
 #for bond in bonds:
@@ -39,17 +40,28 @@ for pair in pairs:
 start = time.time()
 
 NITER = 100
-DAMP = 0.3
+DAMP = 0.5
 for i in range(NITER):
     # repulsion of pads on pcb
     for pair in pairs:
-        pair.repulsion_pboard(damp=DAMP)
+        pair.repulsion_pboard(damp=0.5*DAMP)
         pair.repulsion_pboard_wire(damp=DAMP)
-        pair.repulsion_pchip_wire(damp=2.0*DAMP)
+        pair.repulsion_pchip_wire(damp=DAMP)
 
     #mark_for_update(pairs)
 
     print '%.1f' % max(pair._min_dist_pboard-abs(pair._dist_pboard()) for pair in pairs)
+
+    # add custom forces
+    for bond in bonds:
+        if bond.padnumber in range(0, 49):
+            bond.add_force(Point2D(-5, 0))
+        #elif bond.padnumber in range(49, 98):
+        #    bond.add_force(Point2D(0, -10))
+        #elif bond.padnumber in range(98, 147):
+        #    bond.add_force(Point2D(10, 0))
+        #elif bond.padnumber in range(147, 196):
+        #    bond.add_force(Point2D(0, 10))
 
     if not i % 10:
         with open('animation/bondspstest_%04i.ps' % i, 'w') as f:

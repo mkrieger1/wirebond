@@ -27,14 +27,8 @@ def read_bond_definition(filename):
             item = line.split()
             ring = int(item[1])
             radius = int(item[2])
-            if 'RECT' in item:
-                rectangle = [chip[0]-radius,
-                             chip[1]-radius,
-                             chip[2]+radius,
-                             chip[3]+radius]
-            else:
-                rectangle = None
-            rings[ring] = (radius, rectangle)
+            rectangular = 'RECT' in item
+            rings[ring] = (radius, rectangular)
 
         # get 'do not bond' nets
         if line.startswith('NO_BOND'):
@@ -79,9 +73,10 @@ def read_bond_definition(filename):
             net = item[1]
             if net not in no_bond:
                 ring = int(item[2])
-                (length, rectangle) = rings[ring]
+                (length, rectangular) = rings[ring]
                 pchip = Point2D(pos.x, pos.y)
-                bond = Bond(padnumber, net, pchip, length, 0, ring, rectangle)
+                bond = Bond(padnumber, net, pchip, length, 0, ring,
+                            rectangular, chip)
                 bonds.append(bond)
             pos += incr
 

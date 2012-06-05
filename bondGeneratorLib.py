@@ -32,9 +32,13 @@ class Point2D():
         return math.sqrt(self.x**2 + self.y**2)
 
     def __add__(self, p): # overload "+" operator
-        x = self.x + p.x
-        y = self.y + p.y
-        return Point2D(x, y)
+        if p == 0: # Point2D + 0
+            return self
+        else:
+            x = self.x + p.x
+            y = self.y + p.y
+            return Point2D(x, y)
+    __radd__ = __add__ # 0 + Point2D()
 
     def __sub__(self, p): # overload "-" operator
         x = self.x - p.x
@@ -84,18 +88,23 @@ class Point2D():
 # Bond: wire between two endpoints (pchip --> pboard), forces move pboard
 #==============================================================================
 class Bond():
-    def __init__(self, padnumber, net, pchip, length, angle, ring=0, rectangle=None):
+    def __init__(self, padnumber, net, pchip, length, angle, ring,
+                       rectangular, chip=None):
         self.padnumber = padnumber
         self.net = net
         self.pchip = pchip
         self.length = float(length)
         self.angle = float(angle)
+        self.ring = ring
+        self.rectangular = rectangular
+
+        if self.rectangular:
+            self.ring_radius = self.length
+            self.chip = chip
+
+        self.pad_rotation = self.angle
         self.calc_pboard()
-        self.ring = int(ring)
         self.forces = []
-        self.rectangle = rectangle # would be [x0, y0, x1, y1],
-                                   # where (x0, y0) is the bottom left
-                                   # and (x1, y1) is the top right corner
 
     def __str__(self):
         return ("Bond #%i on ring %i, %s --> %s, "
@@ -141,20 +150,41 @@ class Bond():
         self.forces.append(force)
 
     def apply_force(self):
-        # start summation from Point2D(0, 0), not from int(0)
-        force = sum(self.forces, Point2D(0,0))
+        force = sum(self.forces) # works because 0 + Point2D is implemented
         self.forces = []
         # add force to end point and rotate to that angle
         self.set_angle((self.pboard - self.pchip + force).polar_angle())
-        # if PCB-side pad sits on rectangle, adjust length
-        if self.rectangle is not None:
-            [x0, y0, x1, y1] = self.rectangle
-            wire = [self.pchip, self.pboard]
-            t = min(t for t in [intersect_line_x(wire, x0)[1],
-                                intersect_line_y(wire, y0)[1],
-                                intersect_line_x(wire, x1)[1],
-                                intersect_line_y(wire, y1)[1]] if t > 0)
-            self.set_length(t*self.length)
+        # if board-side pad sits on a rectangle around the chip instead of a
+        # circle around the chip-side pad, adjust the length of the bond
+        if self.rectangular:
+            self.set_to_rectangle(rounded_corners=True)
+
+    def set_to_rectangle(self, rounded_corners):
+        [x0, y0, x1, y1] = self.chip
+        radius = self.ring_radius
+        wire = [self.pchip, self.pboard]
+        quadrant = int(self.angle*2/math.pi)
+
+        right = quadrant in [0, 3]
+        top   = quadrant in [0, 1]
+        (x, sgnx) = (x1, 1) if right else (x0, -1)
+        (y, sgny) = (y1, 1) if top   else (y0, -1)
+        corner = Point2D(x, y)
+
+        t = min(t for t in [intersect_line_x(wire, x + sgnx*radius)[1],
+                            intersect_line_y(wire, y + sgny*radius)[1]]
+                if t > 0)
+
+        self.set_length(t*self.length)
+        self.pad_rotation = int((self.angle+math.pi/4)*2/math.pi)*math.pi/2
+
+        if rounded_corners:
+            if (sgnx * (self.pchip.x - corner.x) > 0 and
+                sgny * (self.pchip.y - corner.y) > 0):
+             wire = [self.pchip-corner, self.pboard-corner]
+             (q, t) = intersect_line_circle(wire, radius, quadrant)
+             self.set_length(t*self.length)
+             self.pad_rotation = q.polar_angle()
 
 
 #==============================================================================
@@ -263,12 +293,27 @@ def neighbor_pairs(bonds, rings, center=None):
 #==============================================================================
 # geometric calculations
 #==============================================================================
+
+#------------------------------------------------------------------------------
+# distance point <--> line
+#------------------------------------------------------------------------------
 def dist_point_line(point, line):
+    '''Calculate the distance between a point and a line.
+
+    The line is defined by two Point2D instances given in a list [p1, p2],
+    the point is given by a Point2D instance p.
+    
+    Returns a tuple (r, t) where b = p1 + t * (p2-p1) is the point on the
+    line with the shortest distance to p, and r is the vector from p to b.
+    The distance between the point and the line is then abs(r).'''
     a = point-line[0]
     b = (line[1]-line[0]).normalized()
     t = a.dot(b)
     return (line[0] + b*t - point, t/abs(line[1]-line[0]))
 
+#------------------------------------------------------------------------------
+# intersection line <--> line
+#------------------------------------------------------------------------------
 def _intersect_line_xy(line, xy, mode):
     p = line[0]
     a = line[1]-line[0]
@@ -287,9 +332,74 @@ def _intersect_line_xy(line, xy, mode):
     return (q, t)
 
 def intersect_line_x(line, x):
+    '''Find the point on a line with a given x coordinate.
+    
+    The line is defined by two Point2D instances given in a list [p1, p2].
+    
+    Returns a tuple (q, t) where q = p1 + t*(p2-p1) is the intersection
+    point. If the line itself is the vertical line defined by x, from the
+    infinite number of solutions the one where t=1 is chosen. If the line is
+    a vertical line with a different x coordinate, q and t are None.'''
     return _intersect_line_xy(line, x, 'x')
+
 def intersect_line_y(line, y):
+    '''Find the point on a line with a given y coordinate.
+
+    The line is defined by two Point2D instances given in a list [p1, p2].
+    
+    Returns a tuple (q, t) where q = p1 + t*(p2-p1) is the intersection
+    point. If the line itself is the horizontal line defined by y, from the
+    infinite number of solutions the one where t=1 is chosen. If the line is
+    a horizontal line with a different y coordinate, q and t are None.'''
     return _intersect_line_xy(line, y, 'y')
+
+#------------------------------------------------------------------------------
+# intersection line <--> circle
+#------------------------------------------------------------------------------
+def intersect_line_circle(line, radius, quadrant):
+    '''Calculate the intersection point of a line and a quarter circle
+    centered at the origin.
+    
+    source: http://mathworld.wolfram.com/Circle-LineIntersection.html
+    
+    The line is defined by two Point2D instances given in a list [p1, p2].
+    The quadrant is given as the number 0, 1, 2, or 3 where 0 is top right,
+    1 is top left, 2 is bottom left and 3 is bottom right,
+    or quadrant = int(phi*2/pi).
+    
+    Returns a tuple (q, t) where q = p1 + t*(p2-p1) is the intersection
+    point. If there is no intersection point, q and t are None.'''
+
+    [p1, p2] = line
+    dx = p2.x - p1.x
+    dy = p2.y - p1.y
+    sgn = -1 if dy < 0 else 1
+    l = abs(p2-p1)
+    if l == 0:
+        raise ValueError('line is undefined, need two different points')
+    D = p1.x*p2.y - p1.y*p2.x
+    DD = (radius*l)**2 - D**2
+
+    if DD < 0:
+        result = []
+    else:
+        result = [q
+          for q in [Point2D(( D*dy + sgn*dx  * math.sqrt(DD)) / l**2,
+                            (-D*dx + abs(dy) * math.sqrt(DD)) / l**2),
+                    Point2D(( D*dy - sgn*dx  * math.sqrt(DD)) / l**2,
+                            (-D*dx - abs(dy) * math.sqrt(DD)) / l**2)]
+          if True]#int(q.polar_angle()*2/math.pi) == quadrant]
+        print '\n'.join(str(q) for q in result)
+
+    if result:
+        q = result[0]
+        t = abs(q-p1)/l
+    else:
+        q = None
+        t = None
+    return (q, t)
+        
+        
 
 
 def bonds_intersect(bond1, bond2):

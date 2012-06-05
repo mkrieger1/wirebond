@@ -55,9 +55,8 @@ def altium_pad(bond, DX, DY): return """
                                   PCBM_BoardRegisteration,NewTrack.I_ObjectAddress);
 
 """ % (bond.pboard.x/1000.0, bond.pboard.y/1000.0, DX, DY,
-       bond.angle*180/math.pi if bond.rectangle is None else 0.0,
-       bond.padnumber, bond.pchip.x/1000.0, bond.pchip.y/1000.0,
-       bond.pboard.x/1000.0, bond.pboard.y/1000.0)
+       bond.pad_rotation*180/math.pi, bond.padnumber, bond.pchip.x/1000.0,
+       bond.pchip.y/1000.0, bond.pboard.x/1000.0, bond.pboard.y/1000.0)
 
 #------------------------------------------------------------------------------
 # End of Altium .pas file
