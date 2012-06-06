@@ -161,8 +161,9 @@ class Bond():
             self.set_to_rectangle(rounded_corners=True)
 
     def set_to_rectangle(self, rounded_corners):
+        R = 0 # experimental
         [x0, y0, x1, y1] = self.chip
-        radius = self.ring_radius
+        radius = self.ring_radius + R
         wire = [self.pchip, self.pboard]
         quadrant = int(self.angle*2/math.pi)
 
@@ -170,6 +171,8 @@ class Bond():
         top   = quadrant in [0, 1]
         (x, sgnx) = (x1, 1) if right else (x0, -1)
         (y, sgny) = (y1, 1) if top   else (y0, -1)
+        x -= sgnx * R
+        y -= sgny * R
         corner = Point2D(x, y)
 
         t = min(t for t in [intersect_line_x(wire, x + sgnx*radius)[1],
