@@ -19,11 +19,14 @@ for pair in pairs:
     rings_ = [bond.ring for bond in pair.bonds]
     # rings 4, 5, 6, 7 are individual signals --> extra spacing
     # rings 0, 1, 2, 3 are power/ground nets --> no extra spacing
-    if any(ring in [6, 7] for ring in rings_):
-        pair.set_min_dist_pboard(470)
+    if all(ring == 6 for ring in rings_):
+        pair.set_min_dist_pboard(500)
         pair.set_min_dist_pboard_wire(200)
-    elif any(ring in [4, 5] for ring in rings_):
-        pair.set_min_dist_pboard(470)
+    elif all(ring == 4 for ring in rings_):
+        pair.set_min_dist_pboard(550)
+        pair.set_min_dist_pboard_wire(200)
+    elif any(ring in [4, 5, 6, 7] for ring in rings_):
+        pair.set_min_dist_pboard(400)
         pair.set_min_dist_pboard_wire(200)
     # bonds on different rings
     elif not rings_[0] == rings_[1]:
@@ -34,7 +37,7 @@ for pair in pairs:
         pair.set_min_dist_pboard(90)
         pair.set_min_dist_pboard_wire(90)
 
-    pair.set_min_dist_pchip_wire(90)
+    pair.set_min_dist_pchip_wire(80)
 
 #for bond in bonds:
 #    f = bond.p1 - Point2D(-1000, 2000)
@@ -43,24 +46,31 @@ for pair in pairs:
 # start iteration
 start = time.time()
 
-NITER = 5000
-DAMP = 0.2
+NITER = 2000
+DAMP = 0.5
 fdist = open('dist_violation.txt', 'w')
 for i in range(NITER):
     # repulsion of pads on pcb
     for pair in pairs:
         pair.repulsion_pboard(damp=1.0*DAMP)
-        pair.repulsion_pboard_wire(damp=0.75*DAMP)
+        pair.repulsion_pboard_wire(damp=0.55*DAMP)
         pair.repulsion_pchip_wire(damp=1.0*DAMP)
 
     #mark_for_update(pairs)
 
-    s = '%4i %6.1f %6.1f' % (i,
-      max(pair._min_dist_pboard-abs(pair._dist_pboard()) for pair in pairs),
-      max([pair._min_dist_pboard_wire-abs(pair._dist_pboard_wire(0)[0])
+    s = '%4i %6.1f %6.1f %6.1f %6.1f' % (i,
+      min(abs(pair._dist_pboard()) for pair in pairs
+          if all(bond.ring == 4 for bond in pair.bonds)),
+      min(abs(pair._dist_pboard()) for pair in pairs
+          if all(bond.ring == 6 for bond in pair.bonds)),
+      min([abs(pair._dist_pboard_wire(0)[0])
            for pair in pairs if abs(pair._dist_pboard_wire(0)[1]-0.5) < 0.5] +
-          [pair._min_dist_pboard_wire-abs(pair._dist_pboard_wire(1)[0])
-           for pair in pairs if abs(pair._dist_pboard_wire(1)[1]-0.5) < 0.5])
+          [abs(pair._dist_pboard_wire(1)[0])
+           for pair in pairs if abs(pair._dist_pboard_wire(1)[1]-0.5) < 0.5]),
+      min([abs(pair._dist_pchip_wire(0)[0])
+           for pair in pairs if abs(pair._dist_pchip_wire(0)[1]-0.5) < 0.5] +
+          [abs(pair._dist_pchip_wire(1)[0])
+           for pair in pairs if abs(pair._dist_pchip_wire(1)[1]-0.5) < 0.5])
       )
     print s; print >> fdist, s
 
@@ -94,6 +104,11 @@ for i in range(NITER):
         
 stop = time.time()
 print 'took %.2f seconds.' % (stop-start)
+
+print min(abs(pair._dist_pboard()) for pair in pairs
+          if all(bond.ring == 4 for bond in pair.bonds))
+print min(abs(pair._dist_pboard()) for pair in pairs
+          if all(bond.ring == 6 for bond in pair.bonds))
 
 for ring in rings:
     print list(sorted(int(round(bond.length))
