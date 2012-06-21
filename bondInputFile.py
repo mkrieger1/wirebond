@@ -47,14 +47,12 @@ def read_bond_definition(filename):
         # move position
         elif line.startswith('MOVE'):
             [dx, dy] = map(int, line.split()[1:])
-            pos.x += dx
-            pos.y += dy
+            pos += Point2D(dx, dy)
 
         # change position auto-increment
         elif line.startswith('INCR'):
             [dx, dy] = map(int, line.split()[1:])
-            incr.x = dx
-            incr.y = dy
+            incr = Point2D(dx, dy)
 
         # go into read_pad mode
         elif line.startswith('BEGIN PADS'):

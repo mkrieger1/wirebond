@@ -133,7 +133,8 @@ class BondGenerator():
                 
         finally:
          stop = time.time()
-         print 'took %.2f seconds.' % (stop-start)
+         T = stop-start
+         print 'took %.2f seconds (%.1fms per iteration)' % (T, 1000*T/Niter)
 
          # save state
          self.bonds = bonds
@@ -162,5 +163,5 @@ class BondGenerator():
 #====================================================================
 if __name__=='__main__':
     bg = BondGenerator('input/spadic10_pins_by_number.txt')
-    bg.run(1)
+    bg.run(100)
 
