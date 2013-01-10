@@ -12,21 +12,21 @@ typedef struct {
     float y;
 } Point;
 
-static void add(Point *p, Point q);
-static void sub(Point *p, Point q);
-static void mul(Point *p, float a);
-static void div(Point *p, float a);
-static void neg(Point *p);
+void add(Point *p, Point q);
+void sub(Point *p, Point q);
+void mul(Point *p, float a);
+void div(Point *p, float a);
+void neg(Point *p);
 
-static float abs(Point p);
-static float angle(Point p);
-static float dot(Point p, Point q);
+float abs_pt(Point p);
+float angle(Point p);
+float dot(Point p, Point q);
 
-static void rotate(Point *p, float phi);
-static Point rotated(Point p, float phi);
+void rotate_pt(Point *p, float angle);
+Point rotated_pt(Point p, float angle);
 
-static void normalize(Point *p);
-static Point normalized(Point p);
+void normalize_pt(Point *p);
+Point normalized_pt(Point p);
 
 
 // forces are also represented by 2-D points
@@ -44,12 +44,14 @@ typedef struct {
     Point end;
 } Line;
 
-static Point footpoint(Point p, Line L);
+Vector to_vector(Line L);
 
-static Point intersect_line_x(Line L, float x);
-static Point intersect_line_y(Line L, float y);
+Point footpoint(Point p, Line L);
 
-static Point intersect_line_circle(Line L, float radius, int quadrant);
+Point intersect_line_x(Line L, float x);
+Point intersect_line_y(Line L, float y);
+
+Point intersect_line_circle(Line L, float radius, int quadrant);
 
 
 //--------------------------------------------------------------------
@@ -65,21 +67,21 @@ typedef struct {
     Point force;  // total force acting on pboard
 } Bond;
 
-static void calc_pboard(Bond *b);
-static void calc_length_angle(Bond *b);
+void calc_pboard(Bond *b);
+void calc_length_angle(Bond *b);
 
-static void set_pboard(Bond *b, Point pboard);
-static void set_length(Bond *b, float length);
-static void set_angle(Bond *b, float angle);
+void set_pboard(Bond *b, Point pboard);
+void set_length(Bond *b, float length);
+void set_angle(Bond *b, float angle);
 
-static void stretch(Bond *b, float length);
-static void rotate(Bond *b, float angle);
-static void move(Bond *b, Vector v);
+void stretch(Bond *b, float length);
+void rotate_bd(Bond *b, float angle);
+void move(Bond *b, Vector v);
 
-static void add_force(Bond *b, Force f);
-static void apply_force(Bond *b);
+void add_force(Bond *b, Force f);
+void apply_force(Bond *b);
 
-static void snap_rectangle(Bond *b, float x, float y, float radius);
+void snap_rectangle(Bond *b, float x, float y, float radius);
 
 
 //--------------------------------------------------------------------
@@ -90,13 +92,13 @@ typedef struct {
     float min_dist[3]; // {pboard-pboard, pboard-wire, pchip-wire}
 } BondPair;
 
-static Vector dist_pboard_pboard(const BondPair *P, int order);
-static Vector dist_pboard_wire(const BondPair *P, int order);
-static Vector dist_pchip_wire(const BondPair *P, int order);
+Vector dist_pboard_pboard(const BondPair *P, int order);
+Vector dist_pboard_wire(const BondPair *P, int order);
+Vector dist_pchip_wire(const BondPair *P, int order);
 
-static void repulsion_pboard_pboard(BondPair *P, float damp);
-static void repulsion_pboard_wire(BondPair *P, float damp);
-static void repulsion_pchip_wire(BondPair *P, float damp);
+void repulsion_pboard_pboard(BondPair *P, float damp);
+void repulsion_pboard_wire(BondPair *P, float damp);
+void repulsion_pchip_wire(BondPair *P, float damp);
 
 
 #endif
