@@ -163,5 +163,5 @@ class BondGenerator():
 #====================================================================
 if __name__=='__main__':
     bg = BondGenerator('input/spadic10_pins_by_number.txt')
-    bg.run(100)
+    bg.run(1)
 
