@@ -9,6 +9,8 @@ void print_pt(Point p)
 
 int main()
 {
+    int exists = 0;
+
     printf("Testing bondgenerator C library.\n");
 
     Point p;
@@ -38,7 +40,7 @@ int main()
     print_pt(p);
 
     printf("div 2: ");
-    div(&p, 2.0);
+    div(&p, 2.0, &exists);
     print_pt(p);
 
     printf("neg: ");
@@ -59,11 +61,11 @@ int main()
     print_pt(q);
 
     printf("normalize p: ");
-    normalize_pt(&p);
+    normalize(&p, &exists);
     print_pt(p);
 
     printf("r = normalized q\n");
-    Point r = normalized_pt(q);
+    Point r = normalized(q, &exists);
     print_pt(r);
     print_pt(q);
 
@@ -77,7 +79,7 @@ int main()
     Point c;
     c.x = 4.5;
     c.y = 4.5;
-    Point F = footpoint(c, L);
+    Point F = footpoint(c, L, &exists);
     print_pt(F);
 
     return 0;
