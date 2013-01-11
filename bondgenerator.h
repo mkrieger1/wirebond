@@ -65,7 +65,7 @@ typedef struct {
     float length; // distance pchip->pboard in µm
     float angle;  // polar angle of the line pchip->pboard
 
-    Point force;  // total force acting on pboard
+    Force force;  // total force acting on pboard
 } Bond;
 
 void calc_pboard(Bond *b);

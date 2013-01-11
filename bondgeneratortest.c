@@ -82,6 +82,15 @@ int main()
     Point F = footpoint(c, L, &exists);
     print_pt(F);
 
+    printf("intersect line-circle:\n");
+    p = (Point) {0.0, 2.0};
+    q = (Point) {1.0, 1.0};
+    L = (Line) {p, q};
+    r = intersect_line_circle(L, 3.0, 3, &exists);
+    print_pt(r);
+    if (exists) { printf("exists YES\n"); }
+    else { printf("exists NO\n"); }
+
     return 0;
 }
 

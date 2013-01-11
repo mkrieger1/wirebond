@@ -158,6 +158,7 @@ Point intersect_line_y(Line L, float y, int *exists)
 Point intersect_line_circle(Line L, float radius, int quadrant,
                             int *exists)
 {
+    // first decide if the line crosses the circle at all
     Point p1 = L.start;
     Point p2 = L.end;
     float length = abs_pt(to_vector(L));
@@ -170,6 +171,7 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
     }  
     else
     {
+        // two candidates
         Point q1, q2;
 
         float dx = p2.x-p1.x;
@@ -179,11 +181,12 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
         float lsq = length*length;
 
         q1.x = ( D*dy + sgn*dx*sDD) / lsq;
-        q1.y = (-D*dx + abs(dx)*sDD)/ lsq;
+        q1.y = (-D*dx + fabsf(dy)*sDD) / lsq;
         q2.x = ( D*dy - sgn*dx*sDD) / lsq;
-        q2.y = (-D*dx - abs(dx)*sDD)/ lsq;
+        q2.y = (-D*dx - fabsf(dy)*sDD) / lsq;
 
-        // quadrant matching: 0 = NE, 1 = NW, 2 = SW, 3 = SE
+        // find the one in the desired quadrant
+        // quadrant: 0 = NE, 1 = NW, 2 = SW, 3 = SE
         int qsgnx = (quadrant == 0 || quadrant == 3);
         int qsgny = (quadrant == 0 || quadrant == 1);
         int sgnq1x = (q1.x >= 0);
@@ -210,10 +213,112 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
 }
 
 
+//====================================================================
+// representation of a bond wire as two connected Points
+//====================================================================
+void calc_pboard(Bond *b);
+{
+    Vector wire = {1.0, 0.0};
+    rotate(&wire, b->angle);
+    mul(&wire, b->length);
+    b->pboard = b->pchip;
+    add(&(b->pboard), wire);
+}
+
+void calc_length_angle(Bond *b);
+{
+    Vector wire = b->pboard;
+    sub(&wire, b->pchip);
+    b->length = abs_pt(wire);
+    b->angle = angle(wire);
+}
+
+void set_pboard(Bond *b, Point pboard);
+{
+    b->pboard = pboard;
+    calc_length_angle(&b);
+}
+
+void set_length(Bond *b, float length);
+{
+    b->length = length;
+    calc_pboard(&b);
+}
+
+void set_angle(Bond *b, float angle);
+{
+    b->angle = angle;
+    calc_pboard(&b);
+}
+
+void stretch(Bond *b, float length);
+{
+    set_length(&b, b->length + length);
+}
+
+void rotate_bd(Bond *b, float angle);
+{
+    set_angle(&b, b->angle + angle);
+}
+
+void move(Bond *b, Vector v);
+{
+    Point pboard_new = b->pboard;
+    add(&pboard_new, v);
+    set_pboard(&b, pboard_new);
+}
+
+void add_force(Bond *b, Force f);
+{
+    add(&(b->force), f);
+}
+
+void apply_force(Bond *b);
+{
+    Vector wire = b->pboard;
+    sub(&wire, b->pchip);
+    add(&wire, b->force);
+    set_angle(&b, angle(wire));
+    b->force = (Force) {0.0, 0.0};
+}
+
+void snap_rectangle(Bond *b, float x, float y, float radius);
+{
+    // TODO
+}
 
 
+//====================================================================
+// pair of bond wires
+//====================================================================
+Vector dist_pboard_pboard(const BondPair *P, int order);
+{
+    // TODO
+}
+
+Vector dist_pboard_wire(const BondPair *P, int order);
+{
+    // TODO
+}
+
+Vector dist_pchip_wire(const BondPair *P, int order);
+{
+    // TODO
+}
 
 
+void repulsion_pboard_pboard(BondPair *P, float damp);
+{
+    // TODO
+}
 
+void repulsion_pboard_wire(BondPair *P, float damp);
+{
+    // TODO
+}
 
+void repulsion_pchip_wire(BondPair *P, float damp);
+{
+    // TODO
+}
 
