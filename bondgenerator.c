@@ -26,12 +26,9 @@ void mul(Point *p, float a)
 // divide p by a (in-place)
 void div(Point *p, float a, int *exists)
 {
-    if (a != 0.0)
-    {
+    if (a != 0.0) {
         *exists = 0;
-    }
-    else
-    {
+    } else {
         *exists = 1;
         p->x /= a; p->y /= a;
     }
@@ -117,13 +114,10 @@ Point footpoint(Point p, Line L, int *exists)
 // return point on L with given x
 Point intersect_line_x(Line L, float x, int *exists)
 {
-    if (L.start.x == L.end.x) // parallel
-    {
+    if (L.start.x == L.end.x) { // parallel
         *exists = 0;
         return L.end; // we have to return something
-    }
-    else
-    {
+    } else {
         *exists = 1;
         Point p = L.start;
         Vector dir = to_vector(L);
@@ -137,13 +131,10 @@ Point intersect_line_x(Line L, float x, int *exists)
 // return point on L with given y
 Point intersect_line_y(Line L, float y, int *exists)
 {
-    if (L.start.y == L.end.y) // parallel
-    {
+    if (L.start.y == L.end.y) { // parallel
         *exists = 0;
         return L.end; // we have to return something
-    }
-    else
-    {
+    } else {
         *exists = 1;
         Point p = L.start;
         Vector dir = to_vector(L);
@@ -165,15 +156,11 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
     float length = abs_pt(to_vector(L));
     float D = p1.x*p2.y - p1.y*p2.x;
     float DD = (radius*length)*(radius*length) - D*D;
-    if (DD < 0)
-    {
+    if (DD < 0) {
         *exists = 0;
         return L.end; // we have to return something
-    }  
-    else
-    {
-        // two candidates
-        Point q1, q2;
+    } else {
+        Point q1, q2; // two candidates
 
         float dx = p2.x-p1.x;
         float dy = p2.y-p1.y;
@@ -195,18 +182,13 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
         int sgnq2x = (q2.x >= 0);
         int sgnq2y = (q2.y >= 0);
 
-        if ((qsgnx == sgnq1x) && (qsgny == sgnq1y))
-        {
+        if ((qsgnx == sgnq1x) && (qsgny == sgnq1y)) {
             *exists = 1;
             return q1;
-        }
-        else if ((qsgnx == sgnq2x) && (qsgny == sgnq2y))
-        {
+        } else if ((qsgnx == sgnq2x) && (qsgny == sgnq2y)) {
             *exists = 1;
             return q2;
-        }
-        else
-        {
+        } else {
             *exists = 0;
             return L.end; // we have to return something
         }
