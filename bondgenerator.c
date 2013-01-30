@@ -40,7 +40,8 @@ void div(Point *p, float a, int *exists)
 // negate p (in-place)
 void neg(Point *p)
 {
-    mul(p, -1.0);
+    p->x = -p->x;
+    p->y = -p->y;
 }
 
 // calculate L2 norm
