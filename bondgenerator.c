@@ -217,16 +217,16 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
 //====================================================================
 // representation of a bond wire as two connected Points
 //====================================================================
-void calc_pboard(Bond *b);
+void calc_pboard(Bond *b)
 {
     Vector wire = {1.0, 0.0};
-    rotate(&wire, b->angle);
+    rotate_pt(&wire, b->angle);
     mul(&wire, b->length);
     b->pboard = b->pchip;
     add(&(b->pboard), wire);
 }
 
-void calc_length_angle(Bond *b);
+void calc_length_angle(Bond *b)
 {
     Vector wire = b->pboard;
     sub(&wire, b->pchip);
@@ -234,56 +234,56 @@ void calc_length_angle(Bond *b);
     b->angle = angle(wire);
 }
 
-void set_pboard(Bond *b, Point pboard);
+void set_pboard(Bond *b, Point pboard)
 {
     b->pboard = pboard;
-    calc_length_angle(&b);
+    calc_length_angle(b);
 }
 
-void set_length(Bond *b, float length);
+void set_length(Bond *b, float length)
 {
     b->length = length;
-    calc_pboard(&b);
+    calc_pboard(b);
 }
 
-void set_angle(Bond *b, float angle);
+void set_angle(Bond *b, float angle)
 {
     b->angle = angle;
-    calc_pboard(&b);
+    calc_pboard(b);
 }
 
-void stretch(Bond *b, float length);
+void stretch(Bond *b, float length)
 {
-    set_length(&b, b->length + length);
+    set_length(b, b->length + length);
 }
 
-void rotate_bd(Bond *b, float angle);
+void rotate_bd(Bond *b, float angle)
 {
-    set_angle(&b, b->angle + angle);
+    set_angle(b, b->angle + angle);
 }
 
-void move(Bond *b, Vector v);
+void move(Bond *b, Vector v)
 {
     Point pboard_new = b->pboard;
     add(&pboard_new, v);
-    set_pboard(&b, pboard_new);
+    set_pboard(b, pboard_new);
 }
 
-void add_force(Bond *b, Force f);
+void add_force(Bond *b, Force f)
 {
     add(&(b->force), f);
 }
 
-void apply_force(Bond *b);
+void apply_force(Bond *b)
 {
     Vector wire = b->pboard;
     sub(&wire, b->pchip);
     add(&wire, b->force);
-    set_angle(&b, angle(wire));
+    set_angle(b, angle(wire));
     b->force = (Force) {0.0, 0.0};
 }
 
-void snap_rectangle(Bond *b, float x, float y, float radius);
+void snap_rectangle(Bond *b, float x, float y, float radius)
 {
     // TODO
 }
@@ -292,33 +292,33 @@ void snap_rectangle(Bond *b, float x, float y, float radius);
 //====================================================================
 // pair of bond wires
 //====================================================================
-Vector dist_pboard_pboard(const BondPair *P, int order);
+Vector dist_pboard_pboard(const BondPair *P, int order)
 {
     // TODO
 }
 
-Vector dist_pboard_wire(const BondPair *P, int order);
+Vector dist_pboard_wire(const BondPair *P, int order)
 {
     // TODO
 }
 
-Vector dist_pchip_wire(const BondPair *P, int order);
+Vector dist_pchip_wire(const BondPair *P, int order)
 {
     // TODO
 }
 
 
-void repulsion_pboard_pboard(BondPair *P, float damp);
+void repulsion_pboard_pboard(BondPair *P, float damp)
 {
     // TODO
 }
 
-void repulsion_pboard_wire(BondPair *P, float damp);
+void repulsion_pboard_wire(BondPair *P, float damp)
 {
     // TODO
 }
 
-void repulsion_pchip_wire(BondPair *P, float damp);
+void repulsion_pchip_wire(BondPair *P, float damp)
 {
     // TODO
 }
