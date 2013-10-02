@@ -18,6 +18,7 @@ void mul(Point *p, float a);
 void div(Point *p, float a, int *exists);
 void neg(Point *p);
 
+int quadrant(Point p);
 float abs_pt(Point p);
 float angle(Point p);
 float dot(Point p, Point q);
@@ -51,8 +52,8 @@ Point footpoint(Point p, Line L, int *exists);
 Point intersect_line_x(Line L, float x, int *exists);
 Point intersect_line_y(Line L, float y, int *exists);
 
-Point intersect_line_circle(Line L, float radius, int quadrant,
-                            int *exists);
+Point intersect_line_circle(Line L, Point center, float radius,
+                            int quadrant, int *exists);
 
 
 //====================================================================

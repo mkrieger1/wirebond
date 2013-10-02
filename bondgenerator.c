@@ -47,6 +47,22 @@ float abs_pt(Point p)
     return sqrt(p.x*p.x + p.y*p.y);
 }
 
+// calculate quadrant
+int quadrant(Point p)
+{
+    if ((p.x > 0.0) && (p.y >= 0)) {
+        return 0;
+    } else if ((p.x <= 0.0) and (p.y > 0.0)) {
+        return 1;
+    } else if ((p.x < 0.0) and (p.y <= 0.0)) {
+        return 2;
+    } else if ((p.x >= 0.0) and (p.y < 0.0)) {
+        return 3;
+    } else {
+        return 0; // p.x == 0.0 && p.y == 0.0
+    }
+}
+
 // calculate polar angle
 float angle(Point p)
 {
@@ -147,18 +163,21 @@ Point intersect_line_y(Line L, float y, int *exists)
 
 // return intersection point of L with circle around origin
 // source: http://mathworld.wolfram.com/Circle-LineIntersection.html
-Point intersect_line_circle(Line L, float radius, int quadrant,
-                            int *exists)
+Point intersect_line_circle(Line L, float radius, Point center,
+                            int quadrant, int *exists)
 {
-    // first decide if the line crosses the circle at all
+    Point result;
     Point p1 = L.start;
     Point p2 = L.end;
+    sub(&p1, center);
+    sub(&p2, center);
+    // first decide if the line crosses the circle at all
     float length = abs_pt(to_vector(L));
     float D = p1.x*p2.y - p1.y*p2.x;
     float DD = (radius*length)*(radius*length) - D*D;
     if (DD < 0) {
         *exists = 0;
-        return L.end; // we have to return something
+        result = L.end; // we have to return something
     } else {
         Point q1, q2; // two candidates
 
@@ -184,15 +203,17 @@ Point intersect_line_circle(Line L, float radius, int quadrant,
 
         if ((qsgnx == sgnq1x) && (qsgny == sgnq1y)) {
             *exists = 1;
-            return q1;
+            result = q1;
         } else if ((qsgnx == sgnq2x) && (qsgny == sgnq2y)) {
             *exists = 1;
-            return q2;
+            result = q2;
         } else {
             *exists = 0;
-            return L.end; // we have to return something
+            result = L.end; // we have to return something
         }
     }
+    add(&result, center);
+    return result;
 }
 
 
@@ -267,7 +288,18 @@ void apply_force(Bond *b)
 
 void snap_rectangle(Bond *b, float x, float y, float radius)
 {
-    // TODO
+    int exists_x, exists_y, exists_c;
+    Vector bond = b->pboard;
+    sub(&bond, b->pchip);
+    int q = quadrant(bond);
+    int sgnx = ((q == 0 || q == 1)) ? 1 : -1;
+    int sgny = ((q == 0 || q == 3)) ? 1 : -1;
+    Line wire = (Line) {b->pboard, b->pchip};
+    pboard_x = intersect_line_x(wire, sgnx*x, &exists_x);
+    pboard_y = intersect_line_y(wire, sgny*y, &exists_y);
+    Point center = (Point) {sgnx*x, sgny*y};
+    pboard_c = intersect_line_circle(wire, center, radius, q, &exists_c);
+    /// ....
 }
 
 
