@@ -73,7 +73,7 @@ class BondGenerator():
 
         DAMP = self.damp
         filemode = 'w' if i0 == 0 else 'a'
-        fdist = open('min_dist.txt', filemode)
+        fdist = open('spadic10_revA.log', filemode)
 
         try:
          for i in range(i0, i0+Niter):
@@ -120,10 +120,6 @@ class BondGenerator():
                  frand = Point2D(frandx, frandy)
                  bond.add_force(frand)
 
-             # output postscript for animation
-             if not i % 10:
-                 self.output_postscript('animation/bondspstest_%04i.ps' % i)
-
              # apply all forces
              for bond in bonds:
                  bond.apply_force()
@@ -152,7 +148,7 @@ class BondGenerator():
                                for bond in bonds if bond.ring == ring))
 
          # write postscript and altium output files
-         self.output_postscript('bondspstest.ps')
+         self.output_postscript('spadic10_revA.ps')
 
          with open('spadic10_revA.pas', 'w') as f:
              bonds_output_altium(bonds, 'SPADIC10_revA', f)
@@ -162,6 +158,6 @@ class BondGenerator():
 # MAIN
 #====================================================================
 if __name__=='__main__':
-    bg = BondGenerator('input/spadic10_pins_by_number.txt')
-    bg.run(1)
+    bg = BondGenerator('data/input_spadic10_revA.txt')
+    bg.run(20)
 
