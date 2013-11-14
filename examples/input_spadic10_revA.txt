@@ -5,15 +5,15 @@
 # chip bounding box (needed for rectangular rings)
 CHIP -2445 -2445 2445 2445
 
-# ring definitions
-RING 0  700 RECT
-RING 1 1150 RECT
-RING 2 1150 RECT
-RING 3 1600 RECT
-RING 4 2500
-RING 5 2900
-RING 6 2600 RECT
-RING 7 3000 RECT
+# group definitions
+GROUP 0  700 RECT
+GROUP 1 1150 RECT
+GROUP 2 1150 RECT
+GROUP 3 1600 RECT
+GROUP 4 2500
+GROUP 5 2900
+GROUP 6 2600 RECT
+GROUP 7 3000 RECT
 
 # names of pads that are not bonded ('DNC' in this case)
 NO_BOND DNC
@@ -28,7 +28,7 @@ MOVE -165 0
 INCR 0 -95
 
 BEGIN PADS
-# number name     ring
+# number name     group
   0 vddp1           1
   1 gndp1         0
   2 vddc            1

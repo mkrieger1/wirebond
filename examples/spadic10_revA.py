@@ -16,29 +16,29 @@ class BondGenerator():
 #--------------------------------------------------------------------
     def __init__(self, inputfile):
         # read input file and create list of neighboring bond pairs
-        (bonds, rings) = read_bond_definition(inputfile)
-        pairs = neighbor_pairs(bonds, rings)
+        (bonds, groups) = read_bond_definition(inputfile)
+        pairs = neighbor_pairs(bonds, groups)
         #pairs = all_pairs(bonds)
 
         # set minimum distance for bond position on pcb for each pair
         for pair in pairs:
-            rings_ = [bond.ring for bond in pair.bonds]
-            # rings 4, 5, 6, 7 are individual signals --> extra spacing
-            # rings 0, 1, 2, 3 are power/ground nets --> no extra spacing
-            if all(ring == 6 for ring in rings_):
+            groups_ = [bond.group for bond in pair.bonds]
+            # groups 4, 5, 6, 7 are individual signals --> extra spacing
+            # groups 0, 1, 2, 3 are power/ground nets --> no extra spacing
+            if all(group == 6 for group in groups_):
                 pair.set_min_dist_pboard(500)
                 pair.set_min_dist_pboard_wire(220)
-            elif all(ring == 4 for ring in rings_):
+            elif all(group == 4 for group in groups_):
                 pair.set_min_dist_pboard(550)
                 pair.set_min_dist_pboard_wire(220)
-            elif any(ring in [4, 5, 6, 7] for ring in rings_):
+            elif any(group in [4, 5, 6, 7] for group in groups_):
                 pair.set_min_dist_pboard(400)
                 pair.set_min_dist_pboard_wire(220)
-            # bonds on different rings
-            elif not rings_[0] == rings_[1]:
+            # bonds in different groups
+            elif not groups_[0] == groups_[1]:
                 pair.set_min_dist_pboard(400)
                 pair.set_min_dist_pboard_wire(220)
-            # bonds on same ring
+            # bonds in same group
             else:
                 pair.set_min_dist_pboard(90)
                 pair.set_min_dist_pboard_wire(90)
@@ -47,7 +47,7 @@ class BondGenerator():
 
         self.bonds = bonds
         self.pairs = pairs
-        self.rings = rings
+        self.groups = groups
         self.it = 0
         self.damp = 0.5
 
@@ -65,7 +65,7 @@ class BondGenerator():
     def run(self, Niter):
         bonds = self.bonds
         pairs = self.pairs
-        rings = self.rings
+        groups = self.groups
         i0 = self.it
 
         # start iteration
@@ -80,9 +80,9 @@ class BondGenerator():
              # output various minimum distances TODO make it faster
              s = '%4i %6.1f %6.1f %6.1f %6.1f' % (i,
                min(abs(pair._dist_pboard()) for pair in pairs
-                   if all(bond.ring == 4 for bond in pair.bonds)),
+                   if all(bond.group == 4 for bond in pair.bonds)),
                min(abs(pair._dist_pboard()) for pair in pairs
-                   if all(bond.ring == 6 for bond in pair.bonds)),
+                   if all(bond.group == 6 for bond in pair.bonds)),
                min([abs(pair._dist_pboard_wire(0)[0])
                     for pair in pairs if abs(pair._dist_pboard_wire(0)[1]-0.5) < 0.5] +
                    [abs(pair._dist_pboard_wire(1)[0])
@@ -138,14 +138,14 @@ class BondGenerator():
 
          # print various resulting minimum distances
          print min(abs(pair._dist_pboard()) for pair in pairs
-                   if all(bond.ring == 4 for bond in pair.bonds))
+                   if all(bond.group == 4 for bond in pair.bonds))
          print min(abs(pair._dist_pboard()) for pair in pairs
-                   if all(bond.ring == 6 for bond in pair.bonds))
+                   if all(bond.group == 6 for bond in pair.bonds))
 
-         # print bond wire lengths for each ring
-         for ring in rings:
+         # print bond wire lengths for each group
+         for group in groups:
              print list(sorted(int(round(bond.length))
-                               for bond in bonds if bond.ring == ring))
+                               for bond in bonds if bond.group == group))
 
          # write postscript and altium output files
          self.output_postscript('spadic10_revA.ps')

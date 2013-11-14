@@ -88,18 +88,18 @@ class Point2D():
 # Bond: wire between two endpoints (pchip --> pboard), forces move pboard
 #==============================================================================
 class Bond():
-    def __init__(self, padnumber, net, pchip, length, angle, ring,
+    def __init__(self, padnumber, net, pchip, length, angle, group,
                        rectangular, chip=None):
         self.padnumber = padnumber
         self.net = net
         self.pchip = pchip
         self.length = float(length)
         self.angle = float(angle)
-        self.ring = ring
+        self.group = group
         self.rectangular = rectangular
 
         if self.rectangular:
-            self.ring_radius = self.length
+            self.rect_radius = self.length
             self.chip = chip
 
         self.pad_rotation = self.angle
@@ -107,9 +107,9 @@ class Bond():
         self.forces = []
 
     def __str__(self):
-        return ("Bond #%i on ring %i, %s --> %s, "
+        return ("Bond #%i in group %i, %s --> %s, "
                 "angle = %5.1f°, length = %6.1f µm, net = %s") % (self.padnumber,
-                self.ring, str(self.pchip), str(self.pboard),
+                self.group, str(self.pchip), str(self.pboard),
                 self.angle*180/math.pi, self.length, self.net)
 
     def calc_pboard(self):
@@ -163,7 +163,7 @@ class Bond():
     def set_to_rectangle(self, rounded_corners):
         R = 0 # experimental
         [x0, y0, x1, y1] = self.chip
-        radius = self.ring_radius + R
+        radius = self.rect_radius + R
         wire = [self.pchip, self.pboard]
         quadrant = int(self.angle*2/math.pi)
 
@@ -267,7 +267,7 @@ def all_pairs(bonds):
     return pairs
 
 
-def neighbor_pairs(bonds, rings, center=None):
+def neighbor_pairs(bonds, groups, center=None):
     pairs = []
     # sort all bonds clockwise with respect to their chip pad position use
     # center of gravity or custom center point (custom is useful if the bond
@@ -277,20 +277,20 @@ def neighbor_pairs(bonds, rings, center=None):
         center = sum((b.pchip for b in bonds), Point2D(0, 0))/len(bonds)
     bonds_cw = list(sorted(bonds,
                     key=lambda b: (b.pchip-center).polar_angle()))
-    # for each bond, collect the next other bond on each ring (do this only
+    # for each bond, collect the next other bond of each group (do this only
     # in clockwise direction to avoid duplicate pairs)
     for (i, bond) in enumerate(bonds_cw):
-        neighbors = [None for ring in rings]
+        neighbors = [None for group in groups]
         otherbonds = iter(bonds_cw[i+1:] + bonds_cw[:i])
                         # i+1, i+2, ..., 0, 1, ..., i-1
         while not all(neighbors): # bool(None) == False, bool(any bond) == True
             otherbond = otherbonds.next()
-            ring = otherbond.ring
-            if neighbors[ring] is None:
-                neighbors[ring] = otherbond
+            group = otherbond.group
+            if neighbors[group] is None:
+                neighbors[group] = otherbond
         for neighbor in neighbors:
             pairs.append(BondPair([bond, neighbor]))
-    # len(pairs) should now be len(bonds) * len(rings)
+    # len(pairs) should now be len(bonds) * len(groups)
     return pairs
 
 
