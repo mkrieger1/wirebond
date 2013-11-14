@@ -69,13 +69,14 @@ def read_bond_definition(filename):
             item = line.split()
             padnumber = int(item[0])
             net = item[1]
-            if net not in no_bond:
+            if not net in no_bond:
                 group = int(item[2])
-                (length, rectangular) = groups[group]
-                pchip = Point2D(pos.x, pos.y)
-                bond = Bond(padnumber, net, pchip, length, 0, group,
-                            rectangular, chip)
-                bonds.append(bond)
+                if not group < 0:
+                    (length, rectangular) = groups[group]
+                    pchip = Point2D(pos.x, pos.y)
+                    bond = Bond(padnumber, net, pchip, length, 0, group,
+                                rectangular, chip)
+                    bonds.append(bond)
             pos += incr
 
             #pads = map(int, line.split())
