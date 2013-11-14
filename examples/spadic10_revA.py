@@ -4,10 +4,10 @@
 import random
 import time
 
-from bondGeneratorLib import *
-from bondInputFile import *
-from bondOutputPostscript import *
-from bondOutputAltium import *
+from wirebond.core import *
+from wirebond.input_file import *
+from wirebond.output_postscript import *
+from wirebond.output_altium import *
 
 
 class BondGenerator():
@@ -158,6 +158,6 @@ class BondGenerator():
 # MAIN
 #====================================================================
 if __name__=='__main__':
-    bg = BondGenerator('data/input_spadic10_revA.txt')
+    bg = BondGenerator('input_spadic10_revA.txt')
     bg.run(20)
 

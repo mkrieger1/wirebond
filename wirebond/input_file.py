@@ -1,5 +1,5 @@
 import math
-from bondGeneratorLib import Point2D, Bond, BondPair
+from core import Point2D, Bond, BondPair
 
 def valid_lines(filename):
     with open(filename) as f:
