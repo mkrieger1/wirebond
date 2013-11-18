@@ -11,7 +11,7 @@ def postscript_header():
 % customize here
 %------------------------------------------------------------------------------
 /COL_PAD    {0.9 0.8 0.5 setrgbcolor} def
-/COL_BOND   {0   0   0   setrgbcolor} def
+/COL_BOND   {0.5 0.5 0.5 setrgbcolor} def
 /COL_FORCE  {0.8 0.1 0.1 setrgbcolor} def
 
 /PADSml_W  50 def
@@ -31,8 +31,31 @@ def postscript_header():
   grestore
 } def
 
-/Bond { % on stack: x1 y1 x2 y2 phi
-  gsave 5 dict begin
+/Pad_Name { % on stack: name rot x y
+  gsave 2 dict begin
+  translate
+  dup rotate
+  /angle exch def
+  /name exch def
+
+  /Helvetica findfont
+  0 0 0 setrgbcolor
+  100 scalefont
+  setfont
+  newpath
+
+  name dup
+  angle 90 gt angle 270 lt and
+      {stringwidth pop -300 exch sub -20 180}
+      {                          300 -20   0}
+  ifelse rotate moveto show
+
+  end grestore
+} def
+
+/Bond { % on stack: x1 y1 x2 y2 phi name
+  gsave 6 dict begin
+  /name exch def
   /phi exch def
   /y2  exch def
   /x2  exch def
@@ -45,6 +68,8 @@ def postscript_header():
 
   COL_BOND 10 setlinewidth
   x1 y1 moveto x2 y2 lineto stroke
+
+  name phi x1 y1 Pad_Name
 
   end grestore
 } def
@@ -87,9 +112,9 @@ def postscript_header():
 # Draw a bond
 #------------------------------------------------------------------------------
 def postscript_bond(bond):
-    return "%7.1f %7.1f %7.1f %7.1f %6.1f Bond" % (
+    return "%7.1f %7.1f %7.1f %7.1f %6.1f (%s) Bond" % (
       bond.pchip.x, bond.pchip.y, bond.pboard.x, bond.pboard.y,
-      bond.angle/math.pi*180 if True else 0.0) #bond.rectangle is None else 0.0)
+      bond.angle/math.pi*180, bond.net)
 
 
 #------------------------------------------------------------------------------

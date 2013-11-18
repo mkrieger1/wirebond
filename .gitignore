@@ -1,12 +1,12 @@
 *.swp
+*.swo
 *_out.txt
 *.pas
 *.pyc
 *test.ps
-
-animation/*.ps
-animation/*.png
-animation/*.gif
+build
+examples/*.ps
+examples/*.log
 
 bondgeneratortest
 a.out

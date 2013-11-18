@@ -1,5 +1,5 @@
 import math
-from bondGeneratorLib import Point2D, Bond, BondPair
+from core import Point2D, Bond, BondPair
 
 def valid_lines(filename):
     with open(filename) as f:
@@ -9,7 +9,7 @@ def valid_lines(filename):
                 yield line
 
 def read_bond_definition(filename):
-    rings = {}
+    groups = {}
     pos = Point2D(0, 0)
     incr = Point2D(0, 0)
     bonds = []
@@ -22,13 +22,13 @@ def read_bond_definition(filename):
         if line.startswith('CHIP'):
             chip = map(int, line.split()[1:])
 
-        # get rings
-        if line.startswith('RING'):
+        # get groups
+        if line.startswith('GROUP'):
             item = line.split()
-            ring = int(item[1])
+            group = int(item[1])
             radius = int(item[2])
             rectangular = 'RECT' in item
-            rings[ring] = (radius, rectangular)
+            groups[group] = (radius, rectangular)
 
         # get 'do not bond' nets
         if line.startswith('NO_BOND'):
@@ -64,27 +64,28 @@ def read_bond_definition(filename):
             pos -= incr # undo position change after last pad
 
         # read pads if in read_pad mode and
-        # create a bond for each pad with ring > -1
+        # create a bond for each pad with group > -1
         elif read_pads:
             item = line.split()
             padnumber = int(item[0])
             net = item[1]
-            if net not in no_bond:
-                ring = int(item[2])
-                (length, rectangular) = rings[ring]
-                pchip = Point2D(pos.x, pos.y)
-                bond = Bond(padnumber, net, pchip, length, 0, ring,
-                            rectangular, chip)
-                bonds.append(bond)
+            if not net in no_bond:
+                group = int(item[2])
+                if not group < 0:
+                    (length, rectangular) = groups[group]
+                    pchip = Point2D(pos.x, pos.y)
+                    bond = Bond(padnumber, net, pchip, length, 0, group,
+                                rectangular, chip)
+                    bonds.append(bond)
             pos += incr
 
             #pads = map(int, line.split())
             #for pad in pads:
-            #    ring = pad-1
-            #    if ring > -1: # ring == -1 is an empty pad
+            #    group = pad-1
+            #    if group > -1: # group == -1 is an empty pad
             #        pchip = Point2D(pos.x, pos.y)
-            #        length = rings[ring]
-            #        bonds.append(Bond(padnumber, pchip, length, 0, ring))
+            #        length = groups[group]
+            #        bonds.append(Bond(padnumber, pchip, length, 0, group))
 
 
     # distribute bonds evenly between min. and max. angle
@@ -104,5 +105,5 @@ def read_bond_definition(filename):
     #else:
     #    print "angles not fixed"
 
-    return (bonds, rings)
+    return (bonds, groups)
 
