@@ -1,5 +1,5 @@
-#ifndef __LIB_BONDGENERATOR_H
-#define __LIB_BONDGENERATOR_H
+#ifndef __GEOM2D_H
+#define __GEOM2D_H
 
 #include <math.h>
 
