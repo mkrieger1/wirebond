@@ -5,7 +5,7 @@
 
 
 //====================================================================
-// point in 2-D euclidian space
+// Point/vector in 2-D euclidian space
 //====================================================================
 typedef struct {
     float x;
@@ -30,22 +30,15 @@ void normalize(Point *p, int *exists);
 Point normalized(Point p, int *exists);
 
 
-// forces are also represented by 2-D points
-typedef Point Force;
-
-// 'vectors' are also represented by 2-D points
-typedef Point Vector;
-
-
 //====================================================================
-// straight line between two Points
+// Line through two points
 //====================================================================
 typedef struct {
     Point start;
     Point end;
 } Line;
 
-Vector to_vector(Line L);
+Point to_vector(Line L);
 
 Point footpoint(Point p, Line L, int *exists);
 
