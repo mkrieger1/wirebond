@@ -29,9 +29,6 @@ class Point2D():
     def __str__(self): # --> "str(p)" returns "p.__str__()"
         return "(%7.1f, %7.1f)" % (self.x, self.y)
 
-    def __abs__(self):
-        return math.sqrt(self.x**2 + self.y**2)
-
     def __add__(self, p): # overload "+" operator
         x, y = geom2d.add(self.x, self.y, p.x, p.y)
         return Point2D(x, y)
@@ -46,15 +43,12 @@ class Point2D():
         return Point2D(x, y)
     __rmul__ = __mul__ # reverse (a * Point2D)
 
-    def __neg__(self): # "-Point2D"
-        return -1*self
-
     def __div__(self, a): # overload "/" operator
         x, y = geom2d.div(self.x, self.y, a)
         return Point2D(x, y)
 
-    def dot(self, other):
-        return self.x*other.x + self.y*other.y
+    def __neg__(self): # "-Point2D"
+        return -1*self
 
     def rotate(self, phi):
         x = math.cos(phi)*self.x - math.sin(phi)*self.y
@@ -67,15 +61,21 @@ class Point2D():
         p.rotate(phi)
         return Point2D(p.x, p.y)
 
-    def polar_angle(self):
-        return math.atan2(self.y, self.x) % (2*math.pi)
-
     def normalize(self):
         self.x /= abs(self)
         self.y /= abs(self)
 
     def normalized(self):
         return self/abs(self)
+
+    def __abs__(self):
+        return math.sqrt(self.x**2 + self.y**2)
+
+    def dot(self, other):
+        return self.x*other.x + self.y*other.y
+
+    def polar_angle(self):
+        return math.atan2(self.y, self.x) % (2*math.pi)
 
 
 #==============================================================================
