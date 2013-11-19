@@ -38,13 +38,11 @@ class Point2D():
     __radd__ = __add__ # 0 + Point2D()
 
     def __sub__(self, p): # overload "-" operator
-        x = self.x - p.x
-        y = self.y - p.y
+        x, y = geom2d.sub(self.x, self.y, p.x, p.y)
         return Point2D(x, y)
 
     def __mul__(self, a): # overload "*" operator (Point2D * a)
-        x = a*self.x
-        y = a*self.y
+        x, y = geom2d.mul(self.x, self.y, a)
         return Point2D(x, y)
     __rmul__ = __mul__ # reverse (a * Point2D)
 
@@ -52,8 +50,7 @@ class Point2D():
         return -1*self
 
     def __div__(self, a): # overload "/" operator
-        x = self.x/float(a)
-        y = self.y/float(a)
+        x, y = geom2d.div(self.x, self.y, a)
         return Point2D(x, y)
 
     def dot(self, other):
