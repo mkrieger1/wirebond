@@ -1,4 +1,5 @@
 #include "geom2d.h"
+#include <math.h>
 
 #define add geom2d_point_add
 #define sub geom2d_point_sub

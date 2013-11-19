@@ -1,8 +1,6 @@
 #ifndef __GEOM2D_H
 #define __GEOM2D_H
 
-#include <math.h>
-
 
 //====================================================================
 // Point/vector in 2-D euclidian space
