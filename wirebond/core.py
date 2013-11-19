@@ -15,6 +15,7 @@
 
 import math
 import numpy as np
+import geom2d
 
 
 #==============================================================================
@@ -32,12 +33,8 @@ class Point2D():
         return math.sqrt(self.x**2 + self.y**2)
 
     def __add__(self, p): # overload "+" operator
-        if p == 0: # Point2D + 0
-            return self
-        else:
-            x = self.x + p.x
-            y = self.y + p.y
-            return Point2D(x, y)
+        x, y = geom2d.add(self.x, self.y, p.x, p.y)
+        return Point2D(x, y)
     __radd__ = __add__ # 0 + Point2D()
 
     def __sub__(self, p): # overload "-" operator
