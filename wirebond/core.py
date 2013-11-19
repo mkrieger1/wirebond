@@ -16,7 +16,9 @@
 import math
 import numpy as np
 import geom2d
+
 from wirebond_ext import repulsion_pboard as ext_rep_pboard
+from wirebond_ext import repulsion_pboard_wire as ext_rep_pboard_wire
 
 
 #==============================================================================
@@ -238,14 +240,33 @@ class BondPair():
             self.bonds[1].add_force(-f)
 
     def repulsion_pboard_wire(self, damp=1.0):
-        for i in range(2):
-            [bond, otherbond] = self._bonds_perm(i)
-            (dist, t) = self._dist_pboard_wire(i)
-            dist_violation = self._min_dist_pboard_wire - abs(dist)
-            if t > 0 and t < 1 and dist_violation > 0:
-                f = damp * dist_violation * dist.normalized()
-                bond.add_force(0.5*f)
-                otherbond.add_force(-0.5*f)
+        #for i in range(2):
+        #    [bond, otherbond] = self._bonds_perm(i)
+        #    (dist, t) = self._dist_pboard_wire(i)
+        #    dist_violation = self._min_dist_pboard_wire - abs(dist)
+        #    if t > 0 and t < 1 and dist_violation > 0:
+        #        f = damp * dist_violation * dist.normalized()
+        #        bond.add_force(0.5*f)
+        #        otherbond.add_force(-0.5*f)
+
+        p = self.bonds[1].pboard
+        q, r = self.bonds[0].pchip, self.bonds[0].pboard
+        v, x, y = ext_rep_pboard_wire(p.x, p.y, q.x, q.y, r.x, r.y,
+                                      self._min_dist_pboard_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
+
+        p = self.bonds[0].pboard
+        q, r = self.bonds[1].pchip, self.bonds[1].pboard
+        v, x, y = ext_rep_pboard_wire(p.x, p.y, q.x, q.y, r.x, r.y,
+                                      self._min_dist_pboard_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[1].add_force(f)
+            self.bonds[0].add_force(-f)
+            
 
     def repulsion_pchip_wire(self, damp=1.0):
         for i in range(2):
