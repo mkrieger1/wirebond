@@ -7,9 +7,9 @@
 
 
 //-------------------------------------------------------------------
-// repulsion_pboard
+// repulsion point <-> point
 //-------------------------------------------------------------------
-static PyObject* repulsion_pboard(PyObject *self, PyObject *args)
+static PyObject* repulsion_point_point(PyObject *self, PyObject *args)
 {
     Point p;
     Point q;
@@ -35,9 +35,9 @@ static PyObject* repulsion_pboard(PyObject *self, PyObject *args)
 
 
 //-------------------------------------------------------------------
-// repulsion_pboard_wire
+// repulsion point <-> line
 //-------------------------------------------------------------------
-static PyObject* repulsion_pboard_wire(PyObject *self, PyObject *args)
+static PyObject* repulsion_point_line(PyObject *self, PyObject *args)
 {
     Point p;
     Line L;
@@ -74,10 +74,10 @@ static PyObject* repulsion_pboard_wire(PyObject *self, PyObject *args)
 // Method table
 //===================================================================
 static PyMethodDef WirebondExtMethods[] = {
-    {"repulsion_pboard", repulsion_pboard, METH_VARARGS,
-                         "Helper function for repulsion_pboard."},
-    {"repulsion_pboard_wire", repulsion_pboard_wire, METH_VARARGS,
-                         "Helper function for repulsion_pboard_wire."},
+    {"repulsion_point_point", repulsion_point_point, METH_VARARGS,
+     "Helper function for repulsion_pboard."},
+    {"repulsion_point_line", repulsion_point_line, METH_VARARGS,
+     "Helper function for repulsion_pboard_wire and repulsion_pchip_wire."},
     {NULL, NULL, 0, NULL} // sentinel
 };
 

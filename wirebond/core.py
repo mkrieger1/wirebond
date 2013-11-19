@@ -17,8 +17,8 @@ import math
 import numpy as np
 import geom2d
 
-from wirebond_ext import repulsion_pboard as ext_rep_pboard
-from wirebond_ext import repulsion_pboard_wire as ext_rep_pboard_wire
+from wirebond_ext import repulsion_point_point as ext_rep_pp
+from wirebond_ext import repulsion_point_line as ext_rep_pl
 
 
 #==============================================================================
@@ -233,7 +233,7 @@ class BondPair():
         #    bond.add_force(0.5*f)
         #    otherbond.add_force(-0.5*f)
         p, q = self.bonds[0].pboard, self.bonds[1].pboard
-        v, x, y = ext_rep_pboard(p.x, p.y, q.x, q.y, self._min_dist_pboard)
+        v, x, y = ext_rep_pp(p.x, p.y, q.x, q.y, self._min_dist_pboard)
         if v > 0:
             f = 0.5 * damp * Point2D(x, y)
             self.bonds[0].add_force(f)
@@ -251,8 +251,8 @@ class BondPair():
 
         p = self.bonds[1].pboard
         q, r = self.bonds[0].pchip, self.bonds[0].pboard
-        v, x, y = ext_rep_pboard_wire(p.x, p.y, q.x, q.y, r.x, r.y,
-                                      self._min_dist_pboard_wire)
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pboard_wire)
         if v > 0:
             f = 0.5 * damp * Point2D(x, y)
             self.bonds[0].add_force(f)
@@ -260,8 +260,8 @@ class BondPair():
 
         p = self.bonds[0].pboard
         q, r = self.bonds[1].pchip, self.bonds[1].pboard
-        v, x, y = ext_rep_pboard_wire(p.x, p.y, q.x, q.y, r.x, r.y,
-                                      self._min_dist_pboard_wire)
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pboard_wire)
         if v > 0:
             f = 0.5 * damp * Point2D(x, y)
             self.bonds[1].add_force(f)
@@ -269,13 +269,31 @@ class BondPair():
             
 
     def repulsion_pchip_wire(self, damp=1.0):
-        for i in range(2):
-            [bond, otherbond] = self._bonds_perm(i)
-            (dist, t) = self._dist_pchip_wire(i)
-            dist_violation = self._min_dist_pchip_wire - abs(dist)
-            if t > 0 and t < 1 and dist_violation > 0:
-                f = damp * dist_violation * dist.normalized()
-                bond.add_force(f)
+        #for i in range(2):
+        #    [bond, otherbond] = self._bonds_perm(i)
+        #    (dist, t) = self._dist_pchip_wire(i)
+        #    dist_violation = self._min_dist_pchip_wire - abs(dist)
+        #    if t > 0 and t < 1 and dist_violation > 0:
+        #        f = damp * dist_violation * dist.normalized()
+        #        bond.add_force(f)
+
+        p = self.bonds[1].pchip
+        q, r = self.bonds[0].pchip, self.bonds[0].pboard
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pchip_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
+
+        p = self.bonds[0].pchip
+        q, r = self.bonds[1].pchip, self.bonds[1].pboard
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pchip_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[1].add_force(f)
+            self.bonds[0].add_force(-f)
 
 
 #==============================================================================
