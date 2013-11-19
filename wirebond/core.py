@@ -16,6 +16,7 @@
 import math
 import numpy as np
 import geom2d
+from wirebond_ext import repulsion_pboard as ext_rep_pboard
 
 
 #==============================================================================
@@ -222,13 +223,19 @@ class BondPair():
         self._min_dist_pchip_wire = value
 
     def repulsion_pboard(self, damp=1.0):
-        [bond, otherbond] = self._bonds_perm(0)
-        dist = self._dist_pboard()
-        dist_violation = self._min_dist_pboard - abs(dist)
-        if dist_violation > 0:
-            f = damp * dist_violation * dist.normalized()
-            bond.add_force(0.5*f)
-            otherbond.add_force(-0.5*f)
+        #[bond, otherbond] = self._bonds_perm(0)
+        #dist = self._dist_pboard()
+        #dist_violation = self._min_dist_pboard - abs(dist)
+        #if dist_violation > 0:
+        #    f = damp * dist_violation * dist.normalized()
+        #    bond.add_force(0.5*f)
+        #    otherbond.add_force(-0.5*f)
+        p, q = self.bonds[0], self.bonds[1]
+        v, x, y = ext_rep_pboard(p.x, p.y, q.x, q.y, self._min_dist_pboard)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            p.add_force(f)
+            q.add_force(-f)
 
     def repulsion_pboard_wire(self, damp=1.0):
         for i in range(2):
