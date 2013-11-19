@@ -30,6 +30,8 @@ class Point2D():
         return "(%7.1f, %7.1f)" % (self.x, self.y)
 
     def __add__(self, p): # overload "+" operator
+        if p == 0: # Point2D + 0
+            return self
         x, y = geom2d.add(self.x, self.y, p.x, p.y)
         return Point2D(x, y)
     __radd__ = __add__ # 0 + Point2D()
