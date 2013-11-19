@@ -76,7 +76,7 @@ int rotate(Point *p, float angle)
 // normalize p (in-place)
 int normalize(Point *p)
 {
-    div(p, point_abs(*p));
+    return div(p, point_abs(*p));
 }
 
 // calculate quadrant
