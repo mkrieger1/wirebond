@@ -11,7 +11,6 @@
 //--------------------------------------------------------------------
 
 // functions that manipulate a Point
-int geom2d_point_add(Point *p, Point q);
 static PyObject* geom2d_add(PyObject *self, PyObject *args)
 {
     Point p;

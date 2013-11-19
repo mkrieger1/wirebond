@@ -4,7 +4,7 @@ from distutils.core import setup, Extension
 from wirebond import __version__
 
 geom2d_ext = Extension('wirebond.geom2d',
-                       sources=['src/geom2d.c', 'src/geom2dmodule.c'])
+                       sources=['src/geom2d.c', 'src/geom2d_ext.c'])
 
 setup(name='wirebond',
       version=__version__,
