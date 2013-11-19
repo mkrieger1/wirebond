@@ -7,9 +7,9 @@
 
 static PyObject* repulsion_pboard(PyObject *self, PyObject *args)
 {
-    Point p; // bond.pboard
-    Point q; // otherbond.pboard
-    float min; // min_dist_pboard
+    Point p;
+    Point q;
+    float min;
     if (!PyArg_ParseTuple(args, "fffff", &(p.x), &(p.y), &(q.x), &(q.y), &min))
         return NULL;
 

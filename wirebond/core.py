@@ -230,12 +230,12 @@ class BondPair():
         #    f = damp * dist_violation * dist.normalized()
         #    bond.add_force(0.5*f)
         #    otherbond.add_force(-0.5*f)
-        p, q = self.bonds[0], self.bonds[1]
+        p, q = self.bonds[0].pboard, self.bonds[1].pboard
         v, x, y = ext_rep_pboard(p.x, p.y, q.x, q.y, self._min_dist_pboard)
         if v > 0:
             f = 0.5 * damp * Point2D(x, y)
-            p.add_force(f)
-            q.add_force(-f)
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
 
     def repulsion_pboard_wire(self, damp=1.0):
         for i in range(2):
