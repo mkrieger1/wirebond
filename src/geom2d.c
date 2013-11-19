@@ -15,6 +15,8 @@
 #define angle geom2d_point_angle
 #define dot geom2d_point_dot
 
+#define dist_point_line geom2d_dist_point_line
+
 //====================================================================
 // Point/vector in 2-D euclidian space
 //====================================================================
@@ -114,30 +116,43 @@ float dot(Point p, Point q)
 }
 
 
+//====================================================================
+// Line through two points
+//====================================================================
+
+// Calculate distance from Point p to Line L.
+// 'dist' is the vector from the p to the closest point on L.
+// 'pos' indicates where the closest point from p to L is between L.start
+// and L.end.
+int dist_point_line(Point p, Line L, Point *dist, float *pos)
+{
+    Point a = p;
+    sub(&a, L.start);
+
+    Point b = L.end;
+    sub(&b, L.start);
+    if (normalize(&b))
+        return 1;
+
+    float t = dot(a, b);
+
+    *dist = b;
+    mul(dist, t);
+    add(dist, L.start);
+    sub(dist, p);
+
+    Point q = L.end;
+    sub(&q, L.start);
+    float len = point_abs(q);
+    /* should not happen - we already checked this above
+    if (len == 0.0)
+        return 1; */
+    *pos = t/len;
+
+    return 0;
+}
+
 /*
-//====================================================================
-// straight line between two Points
-//====================================================================
-
-// return vector start->end
-Vector to_vector(Line L)
-{
-    sub(&(L.end), L.start);
-    return L.end;
-}
-
-// return footpoint of p on L
-Point footpoint(Point p, Line L, int *exists)
-{
-    sub(&p, L.start);
-    Vector dir = to_vector(L);
-    normalize(&dir, exists);
-    float t = dot(p, dir);
-    mul(&dir, t);
-    add(&(L.start), dir);
-    return L.start;
-}
-
 // return point on L with given x
 Point intersect_line_x(Line L, float x, int *exists)
 {

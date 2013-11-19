@@ -2,9 +2,13 @@
 #include "geom2d.h"
 
 
-//-------------------------------------------------------------------
+//===================================================================
 // Method definitions
-//-------------------------------------------------------------------
+//===================================================================
+
+//--------------------------------------------------------------------
+// Point
+//--------------------------------------------------------------------
 
 // functions that manipulate a Point
 int geom2d_point_add(Point *p, Point q);
@@ -124,9 +128,29 @@ static PyObject* geom2d_dot(PyObject *self, PyObject *args)
     return Py_BuildValue("f", dot);
 }
 
-//-------------------------------------------------------------------
+//--------------------------------------------------------------------
+// Line
+//--------------------------------------------------------------------
+
+static PyObject* geom2d_dist_point_line_(PyObject *self, PyObject *args)
+{
+    Point p;
+    Line L;
+    if (!PyArg_ParseTuple(args, "ffffff", &(p.x), &(p.y),
+                          &(L.start.x), &(L.start.y), &(L.end.x), &(L.end.y)))
+        return NULL;
+    Point dist;
+    float pos;
+    if (geom2d_dist_point_line(p, L, &dist, &pos)) {
+        PyErr_SetString(PyExc_ZeroDivisionError, "No valid line.");
+        return NULL;
+    }
+    return Py_BuildValue("fff", dist.x, dist.y, pos);
+}
+
+//===================================================================
 // Method table
-//-------------------------------------------------------------------
+//===================================================================
 static PyMethodDef Geom2dMethods[] = {
     {"add",       geom2d_add, METH_VARARGS, "Add two points."},
     {"sub",       geom2d_sub, METH_VARARGS, "Subtract a point from another."},
@@ -139,12 +163,13 @@ static PyMethodDef Geom2dMethods[] = {
     {"abs",       geom2d_abs, METH_VARARGS, "Calculate length."},
     {"angle",     geom2d_angle, METH_VARARGS, "Calculate angle."},
     {"dot",       geom2d_dot, METH_VARARGS, "Calculate dot product."},
+    {"dist_point_line", geom2d_dist_point_line_, METH_VARARGS, "Calculate point-line distance."},
     {NULL, NULL, 0, NULL} // sentinel
 };
 
-//-------------------------------------------------------------------
+//===================================================================
 // Initialization function
-//-------------------------------------------------------------------
+//===================================================================
 PyMODINIT_FUNC initgeom2d(void)
 {
     (void) Py_InitModule("geom2d", Geom2dMethods);

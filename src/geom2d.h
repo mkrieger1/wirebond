@@ -27,7 +27,6 @@ float geom2d_point_angle(Point p);
 float geom2d_point_dot(Point p, Point q);
 
 
-/*
 //====================================================================
 // Line through two points
 //====================================================================
@@ -36,10 +35,9 @@ typedef struct {
     Point end;
 } Line;
 
-Point to_vector(Line L);
+int geom2d_dist_point_line(Point p, Line L, Point *dist, float *pos);
 
-Point footpoint(Point p, Line L, int *exists);
-
+/*
 Point intersect_line_x(Line L, float x, int *exists);
 Point intersect_line_y(Line L, float y, int *exists);
 

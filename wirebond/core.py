@@ -59,10 +59,10 @@ class Point2D():
         return Point2D(x, y)
 
     def normalize(self):
-        self.x, self.y = geom2d.rotate(self.x, self.y, phi)
+        self.x, self.y = geom2d.normalize(self.x, self.y)
 
     def normalized(self):
-        x, y = geom2d.rotate(self.x, self.y, phi)
+        x, y = geom2d.normalize(self.x, self.y)
         return Point2D(x, y)
 
     def __abs__(self):
@@ -302,10 +302,10 @@ def dist_point_line(point, line):
     Returns a tuple (r, t) where b = p1 + t * (p2-p1) is the point on the
     line with the shortest distance to p, and r is the vector from p to b.
     The distance between the point and the line is then abs(r).'''
-    a = point-line[0]
-    b = (line[1]-line[0]).normalized()
-    t = a.dot(b)
-    return (line[0] + b*t - point, t/abs(line[1]-line[0]))
+    x, y, t = geom2d.dist_point_line(point.x, point.y,
+                                     line[0].x, line[0].y,
+                                     line[1].x, line[1].y)
+    return (Point2D(x, y), t)
 
 #------------------------------------------------------------------------------
 # intersection line <--> line
