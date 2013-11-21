@@ -8,3 +8,6 @@ build
 examples/*.ps
 examples/*.log
 
+bondgeneratortest
+a.out
+

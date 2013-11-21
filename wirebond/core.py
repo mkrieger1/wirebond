@@ -15,6 +15,10 @@
 
 import math
 import numpy as np
+import geom2d
+
+from wirebond_ext import repulsion_point_point as ext_rep_pp
+from wirebond_ext import repulsion_point_line as ext_rep_pl
 
 
 #==============================================================================
@@ -28,60 +32,53 @@ class Point2D():
     def __str__(self): # --> "str(p)" returns "p.__str__()"
         return "(%7.1f, %7.1f)" % (self.x, self.y)
 
-    def __abs__(self):
-        return math.sqrt(self.x**2 + self.y**2)
-
     def __add__(self, p): # overload "+" operator
         if p == 0: # Point2D + 0
             return self
-        else:
-            x = self.x + p.x
-            y = self.y + p.y
-            return Point2D(x, y)
+        x, y = geom2d.add(self.x, self.y, p.x, p.y)
+        return Point2D(x, y)
     __radd__ = __add__ # 0 + Point2D()
 
     def __sub__(self, p): # overload "-" operator
-        x = self.x - p.x
-        y = self.y - p.y
+        x, y = geom2d.sub(self.x, self.y, p.x, p.y)
         return Point2D(x, y)
 
     def __mul__(self, a): # overload "*" operator (Point2D * a)
-        x = a*self.x
-        y = a*self.y
+        x, y = geom2d.mul(self.x, self.y, a)
         return Point2D(x, y)
     __rmul__ = __mul__ # reverse (a * Point2D)
 
-    def __neg__(self): # "-Point2D"
-        return -1*self
-
     def __div__(self, a): # overload "/" operator
-        x = self.x/float(a)
-        y = self.y/float(a)
+        x, y = geom2d.div(self.x, self.y, a)
         return Point2D(x, y)
 
-    def dot(self, other):
-        return self.x*other.x + self.y*other.y
+    def __neg__(self): # "-Point2D"
+        x, y = geom2d.neg(self.x, self.y)
+        return Point2D(x, y)
 
     def rotate(self, phi):
-        x = math.cos(phi)*self.x - math.sin(phi)*self.y
-        y = math.sin(phi)*self.x + math.cos(phi)*self.y
-        self.x = x
-        self.y = y
+        self.x, self.y = geom2d.rotate(self.x, self.y, phi)
 
     def rotated(self, phi):
-        p = self
-        p.rotate(phi)
-        return Point2D(p.x, p.y)
+        x, y = geom2d.rotate(self.x, self.y, phi)
+        return Point2D(x, y)
+
+    def normalize(self):
+        self.x, self.y = geom2d.normalize(self.x, self.y)
+
+    def normalized(self):
+        x, y = geom2d.normalize(self.x, self.y)
+        return Point2D(x, y)
+
+    def __abs__(self):
+        return geom2d.abs(self.x, self.y)
+
+    def dot(self, other):
+        return geom2d.dot(self.x, self.y, other.x, other.y)
 
     def polar_angle(self):
         return math.atan2(self.y, self.x) % (2*math.pi)
-
-    def normalize(self):
-        self.x /= abs(self)
-        self.y /= abs(self)
-
-    def normalized(self):
-        return self/abs(self)
+        # this is really the same as geom2d.angle ...
 
 
 #==============================================================================
@@ -228,32 +225,75 @@ class BondPair():
         self._min_dist_pchip_wire = value
 
     def repulsion_pboard(self, damp=1.0):
-        [bond, otherbond] = self._bonds_perm(0)
-        dist = self._dist_pboard()
-        dist_violation = self._min_dist_pboard - abs(dist)
-        if dist_violation > 0:
-            f = damp * dist_violation * dist.normalized()
-            bond.add_force(0.5*f)
-            otherbond.add_force(-0.5*f)
+        #[bond, otherbond] = self._bonds_perm(0)
+        #dist = self._dist_pboard()
+        #dist_violation = self._min_dist_pboard - abs(dist)
+        #if dist_violation > 0:
+        #    f = damp * dist_violation * dist.normalized()
+        #    bond.add_force(0.5*f)
+        #    otherbond.add_force(-0.5*f)
+        p, q = self.bonds[0].pboard, self.bonds[1].pboard
+        v, x, y = ext_rep_pp(p.x, p.y, q.x, q.y, self._min_dist_pboard)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
 
     def repulsion_pboard_wire(self, damp=1.0):
-        for i in range(2):
-            [bond, otherbond] = self._bonds_perm(i)
-            (dist, t) = self._dist_pboard_wire(i)
-            dist_violation = self._min_dist_pboard_wire - abs(dist)
-            if t > 0 and t < 1 and dist_violation > 0:
-                f = damp * dist_violation * dist.normalized()
-                bond.add_force(0.5*f)
-                otherbond.add_force(-0.5*f)
+        #for i in range(2):
+        #    [bond, otherbond] = self._bonds_perm(i)
+        #    (dist, t) = self._dist_pboard_wire(i)
+        #    dist_violation = self._min_dist_pboard_wire - abs(dist)
+        #    if t > 0 and t < 1 and dist_violation > 0:
+        #        f = damp * dist_violation * dist.normalized()
+        #        bond.add_force(0.5*f)
+        #        otherbond.add_force(-0.5*f)
+
+        p = self.bonds[1].pboard
+        q, r = self.bonds[0].pchip, self.bonds[0].pboard
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pboard_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
+
+        p = self.bonds[0].pboard
+        q, r = self.bonds[1].pchip, self.bonds[1].pboard
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pboard_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[1].add_force(f)
+            self.bonds[0].add_force(-f)
+            
 
     def repulsion_pchip_wire(self, damp=1.0):
-        for i in range(2):
-            [bond, otherbond] = self._bonds_perm(i)
-            (dist, t) = self._dist_pchip_wire(i)
-            dist_violation = self._min_dist_pchip_wire - abs(dist)
-            if t > 0 and t < 1 and dist_violation > 0:
-                f = damp * dist_violation * dist.normalized()
-                bond.add_force(f)
+        #for i in range(2):
+        #    [bond, otherbond] = self._bonds_perm(i)
+        #    (dist, t) = self._dist_pchip_wire(i)
+        #    dist_violation = self._min_dist_pchip_wire - abs(dist)
+        #    if t > 0 and t < 1 and dist_violation > 0:
+        #        f = damp * dist_violation * dist.normalized()
+        #        bond.add_force(f)
+
+        p = self.bonds[1].pchip
+        q, r = self.bonds[0].pchip, self.bonds[0].pboard
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pchip_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[0].add_force(f)
+            self.bonds[1].add_force(-f)
+
+        p = self.bonds[0].pchip
+        q, r = self.bonds[1].pchip, self.bonds[1].pboard
+        v, x, y = ext_rep_pl(p.x, p.y, q.x, q.y, r.x, r.y,
+                             self._min_dist_pchip_wire)
+        if v > 0:
+            f = 0.5 * damp * Point2D(x, y)
+            self.bonds[1].add_force(f)
+            self.bonds[0].add_force(-f)
 
 
 #==============================================================================
@@ -310,10 +350,10 @@ def dist_point_line(point, line):
     Returns a tuple (r, t) where b = p1 + t * (p2-p1) is the point on the
     line with the shortest distance to p, and r is the vector from p to b.
     The distance between the point and the line is then abs(r).'''
-    a = point-line[0]
-    b = (line[1]-line[0]).normalized()
-    t = a.dot(b)
-    return (line[0] + b*t - point, t/abs(line[1]-line[0]))
+    x, y, t = geom2d.dist_point_line(point.x, point.y,
+                                     line[0].x, line[0].y,
+                                     line[1].x, line[1].y)
+    return (Point2D(x, y), t)
 
 #------------------------------------------------------------------------------
 # intersection line <--> line
