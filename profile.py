@@ -26,12 +26,13 @@ stats.calc_callees()
 
 def print_calls(func, caller=None, level=0):
     callees = stats.all_callees[func]
+    ctlist = [d[3] for c, d in callees.iteritems()]
     if not caller:
         data = stats.stats[func][:-1]
     else:
         data = stats.all_callees[caller][func]
     print_calls_line(func, data, level)
-    for f in callees:
+    for (ct, f) in reversed(sorted(zip(ctlist, callees))):
         print_calls(f, func, level+1)
 
 def print_calls_line(func, data, level):
