@@ -11,6 +11,8 @@
 #
 # 2012/02/15 changed format of input file, can now handle arbitrary geometries
 #            to do: update algorithm accordingly
+#
+# 2013       implement geometric calculations in C as a Python extension
 #==============================================================================
 
 import math
