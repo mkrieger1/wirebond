@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 from wirebond import __version__
 
 geom2d_ext = Extension('wirebond.geom2d',
