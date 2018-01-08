@@ -4,20 +4,6 @@
 import random
 import time
 
-import os.path
-import sys
-
-# make sure we use the code from the build directory
-# (instead ~/.local/lib/...)
-builddir = os.path.abspath('../build/lib.linux-x86_64-2.7')
-sys.path.insert(0, builddir)
-import wirebond
-try:
-    assert builddir in wirebond.__file__
-except AssertionError:
-    raise AssertionError("run 'setup.py build' first!")
-del wirebond
-
 from wirebond.core import *
 from wirebond.input_file import *
 from wirebond.output_postscript import *
@@ -91,22 +77,22 @@ class BondGenerator():
 
         try:
          for i in range(i0, i0+Niter):
-             ## output various minimum distances TODO make it faster
-             #s = '%4i %6.1f %6.1f %6.1f %6.1f' % (i,
-             #  min(abs(pair._dist_pboard()) for pair in pairs
-             #      if all(bond.group == 4 for bond in pair.bonds)),
-             #  min(abs(pair._dist_pboard()) for pair in pairs
-             #      if all(bond.group == 6 for bond in pair.bonds)),
-             #  min([abs(pair._dist_pboard_wire(0)[0])
-             #       for pair in pairs if abs(pair._dist_pboard_wire(0)[1]-0.5) < 0.5] +
-             #      [abs(pair._dist_pboard_wire(1)[0])
-             #       for pair in pairs if abs(pair._dist_pboard_wire(1)[1]-0.5) < 0.5]),
-             #  min([abs(pair._dist_pchip_wire(0)[0])
-             #       for pair in pairs if abs(pair._dist_pchip_wire(0)[1]-0.5) < 0.5] +
-             #      [abs(pair._dist_pchip_wire(1)[0])
-             #       for pair in pairs if abs(pair._dist_pchip_wire(1)[1]-0.5) < 0.5])
-             #  )
-             #print s; print >> fdist, s
+             # output various minimum distances TODO make it faster
+             s = '%4i %6.1f %6.1f %6.1f %6.1f' % (i,
+               min(abs(pair._dist_pboard()) for pair in pairs
+                   if all(bond.group == 4 for bond in pair.bonds)),
+               min(abs(pair._dist_pboard()) for pair in pairs
+                   if all(bond.group == 6 for bond in pair.bonds)),
+               min([abs(pair._dist_pboard_wire(0)[0])
+                    for pair in pairs if abs(pair._dist_pboard_wire(0)[1]-0.5) < 0.5] +
+                   [abs(pair._dist_pboard_wire(1)[0])
+                    for pair in pairs if abs(pair._dist_pboard_wire(1)[1]-0.5) < 0.5]),
+               min([abs(pair._dist_pchip_wire(0)[0])
+                    for pair in pairs if abs(pair._dist_pchip_wire(0)[1]-0.5) < 0.5] +
+                   [abs(pair._dist_pchip_wire(1)[0])
+                    for pair in pairs if abs(pair._dist_pchip_wire(1)[1]-0.5) < 0.5])
+               )
+             print s; print >> fdist, s
 
              # add repulsive forces
              for pair in pairs:
@@ -142,39 +128,36 @@ class BondGenerator():
             print 'Stopped by user.'
                 
         finally:
-         #stop = time.time()
-         #T = stop-start
-         #print 'took %.2f seconds (%.1fms per iteration)' % (T, 1000*T/Niter)
+         stop = time.time()
+         T = stop-start
+         print 'took %.2f seconds (%.1fms per iteration)' % (T, 1000*T/Niter)
 
          # save state
          self.bonds = bonds
          self.it = i+1
 
-         ## print various resulting minimum distances
-         #print min(abs(pair._dist_pboard()) for pair in pairs
-         #          if all(bond.group == 4 for bond in pair.bonds))
-         #print min(abs(pair._dist_pboard()) for pair in pairs
-         #          if all(bond.group == 6 for bond in pair.bonds))
+         # print various resulting minimum distances
+         print min(abs(pair._dist_pboard()) for pair in pairs
+                   if all(bond.group == 4 for bond in pair.bonds))
+         print min(abs(pair._dist_pboard()) for pair in pairs
+                   if all(bond.group == 6 for bond in pair.bonds))
 
-         ## print bond wire lengths for each group
-         #for group in groups:
-         #    print list(sorted(int(round(bond.length))
-         #                      for bond in bonds if bond.group == group))
+         # print bond wire lengths for each group
+         for group in groups:
+             print list(sorted(int(round(bond.length))
+                               for bond in bonds if bond.group == group))
 
          # write postscript and altium output files
          self.output_postscript('spadic10_revA.ps')
 
-         #with open('spadic10_revA.pas', 'w') as f:
-         #    bonds_output_altium(bonds, 'SPADIC10_revA', f)
+         with open('spadic10_revA.pas', 'w') as f:
+             bonds_output_altium(bonds, 'SPADIC10_revA', f)
 
 
 #====================================================================
 # MAIN
 #====================================================================
-def main():
+if __name__=='__main__':
     bg = BondGenerator('input_spadic10_revA.txt')
     bg.run(20)
-
-if __name__=='__main__':
-    main()
 
